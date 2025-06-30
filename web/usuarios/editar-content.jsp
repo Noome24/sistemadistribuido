@@ -48,10 +48,11 @@
                                             <option value="">Seleccionar rol...</option>
                                             <option value="1" ${usuario.rol == 1 ? 'selected' : ''}>Administrador</option>
                                             <option value="2" ${usuario.rol == 2 ? 'selected' : ''}>Vendedor</option>
+                                            <option value="3" ${usuario.rol == 3 ? 'selected' : ''}>Usuario</option>
                                         </select>
                                         <div class="form-text">
                                             <i class="fas fa-user-tag me-1"></i>
-                                            Administrador: acceso completo, Vendedor: acceso limitado
+                                            Administrador: acceso completo, Vendedor: acceso limitado, Usuario: solo consulta
                                         </div>
                                         <div class="invalid-feedback" id="error-rol"></div>
                                     </div>
@@ -163,114 +164,142 @@
 </div>
 
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Toggle password visibility
-    $('#toggleNewPassword').click(function() {
-        togglePasswordVisibility('nueva_passwd', $(this));
-    });
+    const toggleNewPassword = document.getElementById('toggleNewPassword');
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
     
-    $('#toggleConfirmPassword').click(function() {
-        togglePasswordVisibility('confirmar_passwd', $(this));
-    });
+    if (toggleNewPassword) {
+        toggleNewPassword.addEventListener('click', function() {
+            togglePasswordVisibility('nueva_passwd', this);
+        });
+    }
+    
+    if (toggleConfirmPassword) {
+        toggleConfirmPassword.addEventListener('click', function() {
+            togglePasswordVisibility('confirmar_passwd', this);
+        });
+    }
 
     // Validación de contraseñas coincidentes
-    $('#confirmar_passwd').on('input', function() {
-        const nuevaPasswd = $('#nueva_passwd').val();
-        const confirmarPasswd = $(this).val();
-        
-        if (nuevaPasswd !== '' && confirmarPasswd !== '') {
-            if (nuevaPasswd !== confirmarPasswd) {
-                mostrarError('confirmar_passwd', 'Las contraseñas no coinciden');
-            } else {
-                limpiarError('confirmar_passwd');
+    const confirmarPasswd = document.getElementById('confirmar_passwd');
+    const nuevaPasswd = document.getElementById('nueva_passwd');
+    
+    if (confirmarPasswd) {
+        confirmarPasswd.addEventListener('input', function() {
+            const nuevaPasswdVal = nuevaPasswd.value;
+            const confirmarPasswdVal = this.value;
+            
+            if (nuevaPasswdVal !== '' && confirmarPasswdVal !== '') {
+                if (nuevaPasswdVal !== confirmarPasswdVal) {
+                    mostrarError('confirmar_passwd', 'Las contraseñas no coinciden');
+                } else {
+                    limpiarError('confirmar_passwd');
+                }
             }
-        }
-    });
+        });
+    }
 
-    $('#nueva_passwd').on('input', function() {
-        const valor = $(this).val();
-        
-        if (valor !== '' && valor.length < 6) {
-            mostrarError('nueva_passwd', 'La contraseña debe tener al menos 6 caracteres');
-        } else {
-            limpiarError('nueva_passwd');
-            // Revalidar confirmación si existe
-            const confirmar = $('#confirmar_passwd').val();
-            if (confirmar !== '') {
-                $('#confirmar_passwd').trigger('input');
+    if (nuevaPasswd) {
+        nuevaPasswd.addEventListener('input', function() {
+            const valor = this.value;
+            
+            if (valor !== '' && valor.length < 6) {
+                mostrarError('nueva_passwd', 'La contraseña debe tener al menos 6 caracteres');
+            } else {
+                limpiarError('nueva_passwd');
+                // Revalidar confirmación si existe
+                const confirmar = confirmarPasswd.value;
+                if (confirmar !== '') {
+                    confirmarPasswd.dispatchEvent(new Event('input'));
+                }
             }
-        }
-    });
+        });
+    }
 
     // Validación del formulario
-    $('#formEditarUsuario').on('submit', function(e) {
-        let valido = true;
+    const formEditarUsuario = document.getElementById('formEditarUsuario');
+    if (formEditarUsuario) {
+        formEditarUsuario.addEventListener('submit', function(e) {
+            let valido = true;
 
-        // Validar rol
-        if ($('#rol').val() === '') {
-            mostrarError('rol', 'Debe seleccionar un rol');
-            valido = false;
-        }
-
-        // Validar estado
-        if ($('#estado').val() === '') {
-            mostrarError('estado', 'Debe seleccionar un estado');
-            valido = false;
-        }
-
-        // Validar contraseñas si se proporcionan
-        const nuevaPasswd = $('#nueva_passwd').val();
-        const confirmarPasswd = $('#confirmar_passwd').val();
-        
-        if (nuevaPasswd !== '' || confirmarPasswd !== '') {
-            if (nuevaPasswd.length < 6) {
-                mostrarError('nueva_passwd', 'La contraseña debe tener al menos 6 caracteres');
+            // Validar rol
+            if (document.getElementById('rol').value === '') {
+                mostrarError('rol', 'Debe seleccionar un rol');
                 valido = false;
             }
+
+            // Validar estado
+            if (document.getElementById('estado').value === '') {
+                mostrarError('estado', 'Debe seleccionar un estado');
+                valido = false;
+            }
+
+            // Validar contraseñas si se proporcionan
+            const nuevaPasswdVal = nuevaPasswd ? nuevaPasswd.value : '';
+            const confirmarPasswdVal = confirmarPasswd ? confirmarPasswd.value : '';
             
-            if (nuevaPasswd !== confirmarPasswd) {
-                mostrarError('confirmar_passwd', 'Las contraseñas no coinciden');
-                valido = false;
+            if (nuevaPasswdVal !== '' || confirmarPasswdVal !== '') {
+                if (nuevaPasswdVal.length < 6) {
+                    mostrarError('nueva_passwd', 'La contraseña debe tener al menos 6 caracteres');
+                    valido = false;
+                }
+                
+                if (nuevaPasswdVal !== confirmarPasswdVal) {
+                    mostrarError('confirmar_passwd', 'Las contraseñas no coinciden');
+                    valido = false;
+                }
             }
-        }
 
-        if (!valido) {
-            e.preventDefault();
-        }
-    });
+            if (!valido) {
+                e.preventDefault();
+            }
+        });
+    }
 
     // Auto-eliminar alertas después de 5 segundos
     setTimeout(function() {
-        $('.alert').fadeOut('slow');
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 500);
+        });
     }, 5000);
 });
 
 function togglePasswordVisibility(fieldId, button) {
-    const passwordField = $('#' + fieldId);
-    const icon = button.find('i');
+    const passwordField = document.getElementById(fieldId);
+    const icon = button.querySelector('i');
     
-    if (passwordField.attr('type') === 'password') {
-        passwordField.attr('type', 'text');
-        icon.removeClass('fa-eye').addClass('fa-eye-slash');
-    } else {
-        passwordField.attr('type', 'password');
-        icon.removeClass('fa-eye-slash').addClass('fa-eye');
+    if (passwordField && icon) {
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     }
 }
 
 function mostrarError(campo, mensaje) {
-    const input = $('#' + campo);
-    const errorDiv = $('#error-' + campo);
+    const input = document.getElementById(campo);
+    const errorDiv = document.getElementById('error-' + campo);
     
-    input.addClass('is-invalid');
-    errorDiv.text(mensaje);
+    if (input) input.classList.add('is-invalid');
+    if (errorDiv) errorDiv.textContent = mensaje;
 }
 
 function limpiarError(campo) {
-    const input = $('#' + campo);
-    const errorDiv = $('#error-' + campo);
+    const input = document.getElementById(campo);
+    const errorDiv = document.getElementById('error-' + campo);
     
-    input.removeClass('is-invalid');
-    errorDiv.text('');
+    if (input) input.classList.remove('is-invalid');
+    if (errorDiv) errorDiv.textContent = '';
 }
 </script>

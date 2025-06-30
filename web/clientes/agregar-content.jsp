@@ -193,36 +193,44 @@ document.addEventListener('DOMContentLoaded', function() {
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
         button.disabled = true;
         
-        // Preparar datos para envío
-        const formData = new FormData();
-        formData.append(tipo, numero);
+        // Construir URL correcta
+        const contextPath = '${pageContext.request.contextPath}';
+        const apiUrl = contextPath + '/api/consulta/' + tipo + '/' + numero;
         
-        fetch('/clientes/buscar-' + tipo, {
-            method: 'POST',
-            body: formData
+        console.log('Consultando URL:', apiUrl); // Para debug
+        
+        fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status); // Para debug
+            return response.json();
+        })
         .then(data => {
-            if (data.error) {
-                alert('Error: ' + data.error);
-            } else {
+            console.log('Response data:', data); // Para debug
+            
+            if (data.success && data.data) {
                 // Autocompletar campos según el tipo
                 if (tipo === 'dni') {
-                    if (data.nombres) {
-                        document.getElementById('nombres').value = data.nombres;
+                    if (data.data.nombres) {
+                        document.getElementById('nombres').value = data.data.nombres;
                     }
-                    if (data.apellidoPaterno && data.apellidoMaterno) {
+                    if (data.data.apellidoPaterno && data.data.apellidoMaterno) {
                         document.getElementById('apellidos').value = 
-                            data.apellidoPaterno + ' ' + data.apellidoMaterno;
-                    } else if (data.apellidoPaterno) {
-                        document.getElementById('apellidos').value = data.apellidoPaterno;
+                            data.data.apellidoPaterno + ' ' + data.data.apellidoMaterno;
+                    } else if (data.data.apellidoPaterno) {
+                        document.getElementById('apellidos').value = data.data.apellidoPaterno;
                     }
                 } else if (tipo === 'ruc') {
-                    if (data.razonSocial) {
-                        document.getElementById('nombres').value = data.razonSocial;
+                    if (data.data.razonSocial) {
+                        document.getElementById('nombres').value = data.data.razonSocial;
                     }
-                    if (data.direccion) {
-                        document.getElementById('direccion').value = data.direccion;
+                    if (data.data.direccion && data.data.direccion !== '-') {
+                        document.getElementById('direccion').value = data.data.direccion;
                     }
                     // Para RUC, limpiar apellidos ya que es razón social
                     document.getElementById('apellidos').value = '';
@@ -230,10 +238,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Mostrar mensaje de éxito
                 alert('Información encontrada y cargada automáticamente');
+            } else {
+                alert('Error: ' + (data.error || 'No se encontraron datos'));
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error completo:', error); // Para debug
             alert('Error de conexión. Por favor, intente nuevamente.');
         })
         .finally(() => {

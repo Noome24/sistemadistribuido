@@ -32,20 +32,54 @@
                                    aria-readonly="true" style="pointer-events: none;">
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label for="dni" class="form-label">DNI</label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="bi bi-person-vcard"></i>
-                            </span>
-                            <input type="text" class="form-control" id="dni" name="dni" 
-                                   value="${cliente.dni}" maxlength="8" pattern="[0-9]{8}">
-                            <button class="btn btn-outline-secondary" type="button" id="buscarDni">
-                                <i class="bi bi-search"></i> Buscar
-                            </button>
-                        </div>
-                        <small class="text-muted">Documento de identidad (8 dígitos)</small>
+                </div>
+
+                <!-- Selector de tipo de documento -->
+                <div class="form-section mb-3">
+                    <label class="form-label">Tipo de Documento:</label>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="tipoDocumento" id="tipoDni" value="dni" checked>
+                        <label class="btn btn-outline-primary" for="tipoDni">
+                            <i class="bi bi-person-vcard me-2"></i>DNI
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="tipoDocumento" id="tipoRuc" value="ruc">
+                        <label class="btn btn-outline-success" for="tipoRuc">
+                            <i class="bi bi-building me-2"></i>RUC
+                        </label>
                     </div>
+                </div>
+
+                <!-- Campo DNI -->
+                <div class="form-group mb-3" id="dniSection">
+                    <label for="dni" class="form-label">DNI</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-person-vcard"></i>
+                        </span>
+                        <input type="text" class="form-control" id="dni" name="dni" 
+                               value="${cliente.dni}" maxlength="8" pattern="[0-9]{8}">
+                        <button class="btn btn-outline-secondary" type="button" id="buscarDni">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                    <small class="text-muted">Documento de identidad (8 dígitos)</small>
+                </div>
+
+                <!-- Campo RUC -->
+                <div class="form-group mb-3" id="rucSection" style="display: none;">
+                    <label for="ruc" class="form-label">RUC</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-building"></i>
+                        </span>
+                        <input type="text" class="form-control" id="ruc" name="ruc" 
+                               maxlength="11" pattern="[0-9]{11}" placeholder="Ingrese RUC de 11 dígitos">
+                        <button class="btn btn-outline-secondary" type="button" id="buscarRuc">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                    <small class="text-muted">Registro Único de Contribuyentes (11 dígitos)</small>
                 </div>
 
                 <div class="row mb-3">
@@ -132,6 +166,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Manejar cambio de tipo de documento
+    const tipoDni = document.getElementById('tipoDni');
+    const tipoRuc = document.getElementById('tipoRuc');
+    const dniSection = document.getElementById('dniSection');
+    const rucSection = document.getElementById('rucSection');
+    
+    tipoDni.addEventListener('change', function() {
+        if (this.checked) {
+            dniSection.style.display = 'block';
+            rucSection.style.display = 'none';
+            document.getElementById('ruc').value = '';
+        }
+    });
+    
+    tipoRuc.addEventListener('change', function() {
+        if (this.checked) {
+            dniSection.style.display = 'none';
+            rucSection.style.display = 'block';
+            document.getElementById('dni').value = '';
+        }
+    });
+    
     // Buscar DNI
     document.getElementById('buscarDni').addEventListener('click', function() {
         const dni = document.getElementById('dni').value.trim();
@@ -146,42 +202,84 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const button = this;
+        buscarDocumento('dni', dni);
+    });
+    
+    // Buscar RUC
+    document.getElementById('buscarRuc').addEventListener('click', function() {
+        const ruc = document.getElementById('ruc').value.trim();
+        
+        if (ruc.length !== 11) {
+            alert('El RUC debe tener exactamente 11 dígitos');
+            return;
+        }
+        
+        if (!/^\d{11}$/.test(ruc)) {
+            alert('El RUC solo debe contener números');
+            return;
+        }
+        
+        buscarDocumento('ruc', ruc);
+    });
+    
+    function buscarDocumento(tipo, numero) {
+        const button = document.getElementById('buscar' + tipo.charAt(0).toUpperCase() + tipo.slice(1));
         const originalText = button.innerHTML;
         
         // Mostrar loading
-        button.innerHTML = '<i class="bi bi-spinner-border"></i> Buscando...';
+        button.innerHTML = '<i class="bi bi-arrow-repeat"></i> Buscando...';
         button.disabled = true;
         
-        // Preparar datos para envío
-        const formData = new FormData();
-        formData.append('dni', dni);
+        // Construir URL correcta
+        const contextPath = '${pageContext.request.contextPath}';
+        const apiUrl = contextPath + '/api/consulta/' + tipo + '/' + numero;
         
-        fetch('/clientes/buscar-dni', {
-            method: 'POST',
-            body: formData
+        console.log('Consultando URL:', apiUrl); // Para debug
+        
+        fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status); // Para debug
+            return response.json();
+        })
         .then(data => {
-            if (data.error) {
-                alert('Error: ' + data.error);
-            } else {
-                // Autocompletar campos
-                if (data.nombres) {
-                    document.getElementById('nombres').value = data.nombres;
-                }
-                if (data.apellidoPaterno && data.apellidoMaterno) {
-                    document.getElementById('apellidos').value = 
-                        data.apellidoPaterno + ' ' + data.apellidoMaterno;
-                } else if (data.apellidoPaterno) {
-                    document.getElementById('apellidos').value = data.apellidoPaterno;
+            console.log('Response data:', data); // Para debug
+            
+            if (data.success && data.data) {
+                // Autocompletar campos según el tipo
+                if (tipo === 'dni') {
+                    if (data.data.nombres) {
+                        document.getElementById('nombres').value = data.data.nombres;
+                    }
+                    if (data.data.apellidoPaterno && data.data.apellidoMaterno) {
+                        document.getElementById('apellidos').value = 
+                            data.data.apellidoPaterno + ' ' + data.data.apellidoMaterno;
+                    } else if (data.data.apellidoPaterno) {
+                        document.getElementById('apellidos').value = data.data.apellidoPaterno;
+                    }
+                } else if (tipo === 'ruc') {
+                    if (data.data.razonSocial) {
+                        document.getElementById('nombres').value = data.data.razonSocial;
+                    }
+                    if (data.data.direccion && data.data.direccion !== '-') {
+                        document.getElementById('direccion').value = data.data.direccion;
+                    }
+                    // Para RUC, limpiar apellidos ya que es razón social
+                    document.getElementById('apellidos').value = '';
                 }
                 
                 alert('Información encontrada y cargada automáticamente');
+            } else {
+                alert('Error: ' + (data.error || 'No se encontraron datos'));
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error completo:', error); // Para debug
             alert('Error de conexión. Por favor, intente nuevamente.');
         })
         .finally(() => {
@@ -189,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
             button.innerHTML = originalText;
             button.disabled = false;
         });
-    });
+    }
     
     // Validación del formulario
     document.getElementById('formCliente').addEventListener('submit', function(e) {
