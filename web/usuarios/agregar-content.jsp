@@ -121,24 +121,33 @@
 </div>
 
 <script>
-$(document).ready(function() {
+// Usar JavaScript vanilla en lugar de jQuery
+document.addEventListener('DOMContentLoaded', function() {
     // Toggle password visibility
-    $('#togglePassword').click(function() {
-        const passwordField = $('#passwd');
-        const icon = $(this).find('i');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('passwd');
+    
+    togglePassword.addEventListener('click', function() {
+        const icon = this.querySelector('i');
         
-        if (passwordField.attr('type') === 'password') {
-            passwordField.attr('type', 'text');
-            icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
         } else {
-            passwordField.attr('type', 'password');
-            icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            passwordField.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
         }
     });
 
     // Validación en tiempo real
-    $('#id_usuario').on('input', function() {
-        const valor = $(this).val();
+    const idUsuarioField = document.getElementById('id_usuario');
+    const passwdField = document.getElementById('passwd');
+    const formAgregarUsuario = document.getElementById('formAgregarUsuario');
+
+    idUsuarioField.addEventListener('input', function() {
+        const valor = this.value;
         const regex = /^[a-zA-Z0-9]+$/;
         
         if (valor.length < 3) {
@@ -150,8 +159,8 @@ $(document).ready(function() {
         }
     });
 
-    $('#passwd').on('input', function() {
-        const valor = $(this).val();
+    passwdField.addEventListener('input', function() {
+        const valor = this.value;
         
         if (valor.length < 6) {
             mostrarError('passwd', 'La contraseña debe tener al menos 6 caracteres');
@@ -161,11 +170,11 @@ $(document).ready(function() {
     });
 
     // Validación del formulario
-    $('#formAgregarUsuario').on('submit', function(e) {
+    formAgregarUsuario.addEventListener('submit', function(e) {
         let valido = true;
 
         // Validar ID usuario
-        const idUsuario = $('#id_usuario').val().trim();
+        const idUsuario = idUsuarioField.value.trim();
         if (idUsuario.length < 3) {
             mostrarError('id_usuario', 'El ID debe tener al menos 3 caracteres');
             valido = false;
@@ -175,20 +184,20 @@ $(document).ready(function() {
         }
 
         // Validar contraseña
-        const passwd = $('#passwd').val();
+        const passwd = passwdField.value;
         if (passwd.length < 6) {
             mostrarError('passwd', 'La contraseña debe tener al menos 6 caracteres');
             valido = false;
         }
 
         // Validar rol
-        if ($('#rol').val() === '') {
+        if (document.getElementById('rol').value === '') {
             mostrarError('rol', 'Debe seleccionar un rol');
             valido = false;
         }
 
         // Validar estado
-        if ($('#estado').val() === '') {
+        if (document.getElementById('estado').value === '') {
             mostrarError('estado', 'Debe seleccionar un estado');
             valido = false;
         }
@@ -200,23 +209,30 @@ $(document).ready(function() {
 
     // Auto-eliminar alertas después de 5 segundos
     setTimeout(function() {
-        $('.alert').fadeOut('slow');
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 500);
+        });
     }, 5000);
 });
 
 function mostrarError(campo, mensaje) {
-    const input = $('#' + campo);
-    const errorDiv = $('#error-' + campo);
+    const input = document.getElementById(campo);
+    const errorDiv = document.getElementById('error-' + campo);
     
-    input.addClass('is-invalid');
-    errorDiv.text(mensaje);
+    input.classList.add('is-invalid');
+    errorDiv.textContent = mensaje;
 }
 
 function limpiarError(campo) {
-    const input = $('#' + campo);
-    const errorDiv = $('#error-' + campo);
+    const input = document.getElementById(campo);
+    const errorDiv = document.getElementById('error-' + campo);
     
-    input.removeClass('is-invalid');
-    errorDiv.text('');
+    input.classList.remove('is-invalid');
+    errorDiv.textContent = '';
 }
 </script>

@@ -57,11 +57,13 @@
                                 <select class="form-control" id="rol" name="rol" required>
                                     <option value="1">Administrador</option>
                                     <option value="2" selected>Usuario</option>
+                                    <option value="3">Vendedor</option>
                                 </select>
                             </div>
                             <small class="form-text text-muted mt-2">
                                 <strong>Administrador:</strong> Acceso completo al sistema<br>
-                                <strong>Usuario:</strong> Acceso limitado (sin gestión de usuarios)
+                                <strong>Usuario:</strong> Acceso limitado (sin gestión de usuarios)<br>
+                                <strong>Vendedor:</strong> Acceso a ventas y productos
                             </small>
                         </div>
                         <input type="hidden" name="estado" value="1">

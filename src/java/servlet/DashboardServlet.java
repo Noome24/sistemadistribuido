@@ -27,18 +27,28 @@ public class DashboardServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
         // Verificar autenticación
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("usuario") == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "No autorizado");
-            response.getWriter().write(gson.toJson(error));
+            // Si es una petición AJAX, devolver JSON de error
+            String acceptHeader = request.getHeader("Accept");
+            if (acceptHeader != null && acceptHeader.contains("application/json")) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Sesión expirada");
+                error.put("redirect", request.getContextPath() + "/login");
+                response.getWriter().write(gson.toJson(error));
+            } else {
+                // Si es una petición normal, redirigir al login
+                response.sendRedirect(request.getContextPath() + "/login");
+            }
             return;
         }
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
 
         try {
             // Obtener estadísticas del dashboard

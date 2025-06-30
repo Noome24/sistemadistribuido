@@ -87,7 +87,9 @@ public class AuthServlet extends HttpServlet {
             nuevo.setId_usuario(idUsuario);
             nuevo.setPasswd(usuarioDAO.hashPassword(password));
             nuevo.setEstado(1);   // activo por defecto
-            nuevo.setRol(3);      // rol default, ajústalo según necesites
+            String rolParam = request.getParameter("rol");
+            int rol = (rolParam != null && !rolParam.isEmpty()) ? Integer.parseInt(rolParam) : 2;
+            nuevo.setRol(rol);
 
             boolean exito = usuarioDAO.guardarUsuario(nuevo);
 

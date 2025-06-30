@@ -17,6 +17,13 @@ public class ClienteServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Verificar autenticación
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("usuario") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
         String path = request.getPathInfo();
 
         if (path == null || path.equals("/")) {
@@ -54,6 +61,13 @@ public class ClienteServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Verificar autenticación
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("usuario") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
         String path = request.getPathInfo();
 
         if (path == null) {
