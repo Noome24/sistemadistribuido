@@ -8,8 +8,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
-@WebServlet(urlPatterns = {"/login", "/logout", "/register"})
+@WebServlet(urlPatterns = {"/login", "/logout", "/register", "/auth"})
 public class AuthServlet extends HttpServlet {
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
 
@@ -19,9 +20,15 @@ public class AuthServlet extends HttpServlet {
 
         if ("/login".equals(path)) {
             String error = request.getParameter("error");
+            String success = request.getParameter("success");
+            
             if (error != null) {
                 request.setAttribute("error", "Usuario o contraseña incorrectos");
             }
+            if (success != null) {
+                request.setAttribute("success", "Usuario registrado exitosamente. Puede iniciar sesión.");
+            }
+            
             request.getRequestDispatcher("/login.jsp").forward(request, response);
 
         } else if ("/logout".equals(path)) {
@@ -34,6 +41,16 @@ public class AuthServlet extends HttpServlet {
         } else if ("/register".equals(path)) {
             // Mostrar formulario de registro
             request.getRequestDispatcher("/register.jsp").forward(request, response);
+            
+        } else if ("/auth".equals(path)) {
+            // Manejar verificación de sesión para AJAX
+            String action = request.getParameter("action");
+            
+            if ("checkSession".equals(action)) {
+                checkSession(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Acción no válida");
+            }
         }
     }
 
@@ -55,6 +72,7 @@ public class AuthServlet extends HttpServlet {
                     session.setAttribute("usuario", usuario);
                     session.setAttribute("username", usuario.getId_usuario());
                     session.setAttribute("rol", usuario.getRol());
+                    session.setMaxInactiveInterval(30 * 60); // 30 minutos
 
                     response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
                     return;
@@ -74,7 +92,6 @@ public class AuthServlet extends HttpServlet {
                 request.getRequestDispatcher("/register.jsp").forward(request, response);
                 return;
             }
-
 
             Usuario existente = usuarioDAO.obtenerUsuarioPorId(idUsuario);
             if (existente != null) {
@@ -99,6 +116,52 @@ public class AuthServlet extends HttpServlet {
                 request.setAttribute("error", "Error al registrar el usuario.");
                 request.getRequestDispatcher("/register.jsp").forward(request, response);
             }
+            
+        } else if ("/auth".equals(path)) {
+            // Manejar acciones de autenticación por AJAX
+            String action = request.getParameter("action");
+            
+            if ("logout".equals(action)) {
+                handleAjaxLogout(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Acción no válida");
+            }
         }
+    }
+    
+    /**
+     * Verifica si existe una sesión activa y devuelve respuesta JSON
+     */
+    private void checkSession(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        HttpSession session = request.getSession(false);
+        boolean hasSession = session != null && session.getAttribute("username") != null;
+        
+        PrintWriter out = response.getWriter();
+        out.print("{\"hasSession\": " + hasSession + "}");
+        out.flush();
+    }
+    
+    /**
+     * Maneja logout por AJAX
+     */
+    private void handleAjaxLogout(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        PrintWriter out = response.getWriter();
+        out.print("{\"success\": true}");
+        out.flush();
     }
 }
