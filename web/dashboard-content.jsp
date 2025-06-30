@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -12,86 +13,146 @@
     </div>
 </div>
 
-<!-- Cards Row -->
-<div class="row">
-    <!-- Clientes Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary dashboard-card h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Total Clientes</div>
-                        <div class="card-value">${totalClientes}</div>
-                        <div class="text-xs text-success">
-                            <i class="fas fa-arrow-up"></i> Activos
+<!-- Loading Spinner -->
+<div id="loadingSpinner" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2 text-muted">Cargando datos del dashboard...</p>
+</div>
+
+<!-- Dashboard Content -->
+<div id="dashboardContent" style="display: none;">
+    <!-- Cards Row -->
+    <div class="row">
+        <!-- Clientes Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary dashboard-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Clientes</div>
+                            <div class="card-value" id="totalClientes">-</div>
+                            <div class="text-xs text-success">
+                                <i class="fas fa-arrow-up"></i> Activos
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users card-icon text-primary"></i>
                         </div>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-users card-icon text-primary"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success dashboard-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Productos</div>
+                            <div class="card-value" id="totalProductos">-</div>
+                            <div class="text-xs text-info">
+                                <i class="fas fa-box"></i> En inventario
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-box card-icon text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pedidos Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info dashboard-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Ganancias Hoy</div>
+                            <div class="card-value" id="ventasHoy">S/ -</div>
+                            <div class="text-xs text-info">
+                                <i class="fas fa-chart-line"></i> Total: <span id="totalPedidos">-</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart card-icon text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventas Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning dashboard-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Ganancias del Mes</div>
+                            <div class="card-value" id="ventasMes">S/ -</div>
+                            <div class="text-xs text-success">
+                                <i class="fas fa-percentage"></i> Margen: <span id="margenPromedio">-</span>%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign card-icon text-warning"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Productos Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success dashboard-card h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Productos</div>
-                        <div class="card-value">${totalProductos}</div>
-                        <div class="text-xs text-warning">
-                            <i class="fas fa-exclamation-triangle"></i> Stock bajo: ${productosStockBajo}
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Top Productos por Precio -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Top 5 Productos Más Caros</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink1">
+                            <div class="dropdown-header">Opciones:</div>
+                            <a class="dropdown-item" href="${pageContext.request.contextPath}/productos/listar.jsp">Ver Todos los Productos</a>
                         </div>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-box card-icon text-success"></i>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="topProductosChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Pedidos Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info dashboard-card h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Pedidos Hoy</div>
-                        <div class="card-value">${pedidosHoy}</div>
-                        <div class="text-xs text-info">
-                            <i class="fas fa-chart-line"></i> Total: ${totalPedidos}
+        <!-- Productos por Rango de Precio -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Distribución por Rango de Precio</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink2">
+                            <div class="dropdown-header">Opciones:</div>
+                            <a class="dropdown-item" href="${pageContext.request.contextPath}/productos/listar.jsp">Gestionar Productos</a>
                         </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-shopping-cart card-icon text-info"></i>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ventas Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning dashboard-card h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Ventas del Mes</div>
-                        <div class="card-value">S/ ${ventasMes}</div>
-                        <div class="text-xs text-success">
-                            <i class="fas fa-percentage"></i> Margen: ${margenPromedio}%
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-dollar-sign card-icon text-warning"></i>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="rangoPreciosChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -99,112 +160,8 @@
     </div>
 </div>
 
-<!-- Charts Row -->
-<div class="row">
-    <!-- Ventas por Día -->
-    <div class="col-xl-8 col-lg-7">
-        <div class="card">
-            <div class="card-header d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Ventas de los Últimos 7 Días</h6>
-                <div class="dropdown no-arrow">
-                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                        <div class="dropdown-header">Opciones:</div>
-                        <a class="dropdown-item" href="#">Ver Reporte Completo</a>
-                        <a class="dropdown-item" href="#">Exportar Datos</a>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div style="height: 300px;">
-                    <canvas id="salesChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Top Productos -->
-    <div class="col-xl-4 col-lg-5">
-        <div class="card">
-            <div class="card-header d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Productos Más Vendidos</h6>
-            </div>
-            <div class="card-body">
-                <div style="height: 300px;">
-                    <canvas id="topProductsChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Additional Metrics Row -->
-<div class="row">
-    <!-- Inventario Crítico -->
-    <div class="col-xl-6 col-lg-6">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="m-0 font-weight-bold text-danger">Inventario Crítico (Stock < 10)</h6>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Stock</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventarioCritico">
-                            <!-- Datos dinámicos -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Actividad Reciente -->
-    <div class="col-xl-6 col-lg-6">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="m-0 font-weight-bold text-primary">Actividad Reciente</h6>
-            </div>
-            <div class="card-body">
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-marker bg-success"></div>
-                        <div class="timeline-content">
-                            <h6 class="timeline-title">Nuevo pedido registrado</h6>
-                            <p class="timeline-text">Cliente: Juan Pérez - S/ 150.00</p>
-                            <small class="text-muted">Hace 2 horas</small>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-marker bg-info"></div>
-                        <div class="timeline-content">
-                            <h6 class="timeline-title">Producto actualizado</h6>
-                            <p class="timeline-text">Stock de "Laptop HP" actualizado</p>
-                            <small class="text-muted">Hace 4 horas</small>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-marker bg-warning"></div>
-                        <div class="timeline-content">
-                            <h6 class="timeline-title">Stock bajo detectado</h6>
-                            <p class="timeline-text">Mouse Inalámbrico - Solo 3 unidades</p>
-                            <small class="text-muted">Hace 6 horas</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+<!-- Scripts para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Set current date
     document.getElementById('currentDate').textContent = new Date().toLocaleDateString('es-ES', {
@@ -214,26 +171,130 @@
         day: 'numeric'
     });
 
-    // Charts
+    // Variables globales para los gráficos
+    let topProductosChart, rangoPreciosChart;
+
+    // Cargar dashboard al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
-        // Sales Chart - Last 7 days
-        const salesCtx = document.getElementById('salesChart').getContext('2d');
-        const salesChart = new Chart(salesCtx, {
-            type: 'line',
+        loadDashboard();
+    });
+
+    function loadDashboard() {
+        // Cargar datos básicos primero
+        fetch('${pageContext.request.contextPath}/api/dashboard')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    updateBasicStats(data);
+                    showDashboard();
+                    // Cargar gráficos después
+                    setTimeout(loadCharts, 500);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Error al cargar el dashboard: ' + error.message);
+            });
+    }
+
+    function updateBasicStats(data) {
+        // Asegurar que los valores sean números
+        const totalClientes = parseInt(data.totalClientes) || 0;
+        const totalProductos = parseInt(data.totalProductos) || 0;
+        const totalPedidos = parseInt(data.totalPedidos) || 0;
+        const ventasHoy = parseFloat(data.ventasHoy) || 0;
+        const ventasMes = parseFloat(data.ventasMes) || 0;
+        const margenPromedio = parseFloat(data.margenPromedio) || 0;
+
+        document.getElementById('totalClientes').textContent = totalClientes;
+        document.getElementById('totalProductos').textContent = totalProductos;
+        document.getElementById('totalPedidos').textContent = totalPedidos;
+        document.getElementById('ventasHoy').textContent = 'S/ ' + ventasHoy.toLocaleString('es-PE', {minimumFractionDigits: 2});
+        document.getElementById('ventasMes').textContent = 'S/ ' + ventasMes.toLocaleString('es-PE', {minimumFractionDigits: 2});
+        document.getElementById('margenPromedio').textContent = margenPromedio.toFixed(1);
+    }
+
+    function showDashboard() {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.getElementById('dashboardContent').style.display = 'block';
+    }
+
+    function showError(message) {
+        document.getElementById('loadingSpinner').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                ${message}
+            </div>
+        `;
+    }
+
+    function loadCharts() {
+        fetch('${pageContext.request.contextPath}/api/dashboard?action=chartData')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al cargar datos de gráficos');
+                }
+                return response.json();
+            })
+            .then(data => {
+                createTopProductosChart(data.topProductos || []);
+                createRangoPreciosChart(data.rangoPrecios || []);
+            })
+            .catch(error => {
+                console.error('Error al cargar gráficos:', error);
+                loadDefaultCharts();
+            });
+    }
+
+    function loadDefaultCharts() {
+        const defaultTopProductos = [
+            {nombre: 'Producto 1', precio: 300},
+            {nombre: 'Producto 2', precio: 200},
+            {nombre: 'Producto 3', precio: 100}
+        ];
+
+        const defaultRangoPrecios = [
+            {rango: 'S/ 0-50', cantidad: 2},
+            {rango: 'S/ 51-100', cantidad: 1},
+            {rango: 'S/ 101-200', cantidad: 1}
+        ];
+
+        createTopProductosChart(defaultTopProductos);
+        createRangoPreciosChart(defaultRangoPrecios);
+    }
+
+    function createTopProductosChart(data) {
+        const ctx = document.getElementById('topProductosChart').getContext('2d');
+        
+        if (topProductosChart) {
+            topProductosChart.destroy();
+        }
+
+        if (!data || data.length === 0) {
+            loadDefaultCharts();
+            return;
+        }
+
+        const labels = data.map(item => item.nombre || 'Sin nombre');
+        const values = data.map(item => parseFloat(item.precio) || 0);
+
+        topProductosChart = new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+                labels: labels,
                 datasets: [{
-                    label: 'Ventas Diarias (S/)',
-                    data: [1200, 1900, 800, 2200, 2600, 1800, 2100],
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                    borderColor: 'rgba(99, 102, 241, 1)',
-                    pointBackgroundColor: 'rgba(99, 102, 241, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(99, 102, 241, 1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
+                    label: 'Precio (S/)',
+                    data: values,
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2
                 }]
             },
             options: {
@@ -248,38 +309,51 @@
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return 'S/ ' + value;
+                                return 'S/ ' + value.toLocaleString();
                             }
                         }
                     }
                 }
             }
         });
+    }
+
+    function createRangoPreciosChart(data) {
+        const ctx = document.getElementById('rangoPreciosChart').getContext('2d');
         
-        // Top Products Chart
-        const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
-        const topProductsChart = new Chart(topProductsCtx, {
+        if (rangoPreciosChart) {
+            rangoPreciosChart.destroy();
+        }
+
+        if (!data || data.length === 0) {
+            loadDefaultCharts();
+            return;
+        }
+
+        const labels = data.map(item => item.rango || 'Sin rango');
+        const values = data.map(item => parseInt(item.cantidad) || 0);
+
+        rangoPreciosChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Laptops', 'Smartphones', 'Tablets', 'Accesorios', 'Otros'],
+                labels: labels,
                 datasets: [{
-                    data: [35, 25, 20, 15, 5],
+                    data: values,
                     backgroundColor: [
-                        '#6366f1',
-                        '#10b981',
-                        '#06b6d4',
-                        '#f59e0b',
-                        '#ef4444'
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)'
                     ],
-                    hoverBackgroundColor: [
-                        '#4f46e5',
-                        '#059669',
-                        '#0891b2',
-                        '#d97706',
-                        '#dc2626'
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 205, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
                     ],
-                    borderWidth: 2,
-                    borderColor: '#fff'
+                    borderWidth: 2
                 }]
             },
             options: {
@@ -293,37 +367,8 @@
                         }
                     }
                 },
-                cutout: '60%'
+                cutout: '50%'
             }
-        });
-
-        // Load critical inventory
-        loadCriticalInventory();
-    });
-
-    function loadCriticalInventory() {
-        // Simulated data - in real app, this would come from the server
-        const criticalItems = [
-            { name: 'Mouse Inalámbrico', stock: 3, status: 'critical' },
-            { name: 'Teclado Mecánico', stock: 7, status: 'warning' },
-            { name: 'Monitor 24"', stock: 2, status: 'critical' },
-            { name: 'Webcam HD', stock: 9, status: 'warning' }
-        ];
-
-        const tbody = document.getElementById('inventarioCritico');
-        tbody.innerHTML = '';
-
-        criticalItems.forEach(item => {
-            const row = document.createElement('tr');
-            const statusClass = item.status === 'critical' ? 'danger' : 'warning';
-            const statusIcon = item.status === 'critical' ? 'exclamation-triangle' : 'exclamation-circle';
-            
-            row.innerHTML = `
-                <td>${item.name}</td>
-                <td><span class="badge bg-${statusClass}">${item.stock}</span></td>
-                <td><i class="fas fa-${statusIcon} text-${statusClass}"></i></td>
-            `;
-            tbody.appendChild(row);
         });
     }
 </script>
