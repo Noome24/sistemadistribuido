@@ -54,6 +54,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- Session Manager - DEBE CARGARSE ANTES DE OTROS SCRIPTS -->
+    <script src="${pageContext.request.contextPath}/js/session-manager.js"></script>
+    
     <!-- Common Scripts -->
     <script>
         // Sidebar Toggle

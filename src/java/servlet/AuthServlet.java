@@ -142,7 +142,15 @@ public class AuthServlet extends HttpServlet {
         boolean hasSession = session != null && session.getAttribute("username") != null;
         
         PrintWriter out = response.getWriter();
-        out.print("{\"hasSession\": " + hasSession + "}");
+        
+        if (hasSession) {
+            // Actualizar el tiempo de última actividad
+            session.setAttribute("lastActivity", System.currentTimeMillis());
+            out.print("{\"hasSession\": true, \"username\": \"" + session.getAttribute("username") + "\"}");
+        } else {
+            out.print("{\"hasSession\": false}");
+        }
+        
         out.flush();
     }
     
@@ -150,18 +158,22 @@ public class AuthServlet extends HttpServlet {
      * Maneja logout por AJAX
      */
     private void handleAjaxLogout(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        
+        throws IOException {
+    
         HttpSession session = request.getSession(false);
+        String username = null;
+        
         if (session != null) {
+            username = (String) session.getAttribute("username");
             session.invalidate();
+            System.out.println("Sesión cerrada para usuario: " + username + " (cierre automático)");
         }
         
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         
         PrintWriter out = response.getWriter();
-        out.print("{\"success\": true}");
+        out.print("{\"success\": true, \"message\": \"Sesión cerrada correctamente\"}");
         out.flush();
     }
 }

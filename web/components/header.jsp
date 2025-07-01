@@ -21,7 +21,7 @@
             <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="${pageContext.request.contextPath}/perfil"><i class="bi bi-person me-2"></i>Perfil</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/logout"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
+                <li><a class="dropdown-item" href="#" onclick="cerrarSesion(); return false;"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
             </ul>
         </div>
     </div>
