@@ -28,19 +28,16 @@
 <body>
     <!-- Include Sidebar -->
     <jsp:include page="/components/sidebar.jsp" />
-
     <!-- Main Content -->
     <div class="content" id="content">
         <!-- Include Navbar -->
         <jsp:include page="/components/navbar.jsp" />
-
         <!-- Page Content -->
         <div class="container-fluid">
             <!-- Include the specific page content -->
             <jsp:include page="${contentPage}" />
         </div>
     </div>
-
     <!-- Include Timer -->
     <jsp:include page="/components/temporizador.jsp" />
 
@@ -54,7 +51,11 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Session Manager - DEBE CARGARSE ANTES DE OTROS SCRIPTS -->
+    <!-- Session Manager - Debe cargarse antes de otros scripts -->
+    <script>
+        // Establecer el contextPath globalmente para el SessionManager
+        window.contextPath = '${pageContext.request.contextPath}';
+    </script>
     <script src="${pageContext.request.contextPath}/js/session-manager.js"></script>
     
     <!-- Common Scripts -->

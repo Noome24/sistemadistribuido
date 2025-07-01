@@ -7,6 +7,9 @@ class SessionManager {
     this.sessionCheckInterval = null
     this.windowBlurTimeout = null
     this.pageHiddenTimeout = null
+    this.lastActivity = Date.now()
+    this.isWindowClosing = false
+    this.hiddenStartTime = null
     this.init()
   }
 
@@ -48,12 +51,13 @@ class SessionManager {
   init() {
     console.log("Inicializando SessionManager con contextPath:", this.contextPath)
 
-    // Detectar cierre de ventana/pestaña
+    // Detectar cierre de ventana/pestaña - SOLO cuando realmente se cierra
     window.addEventListener("beforeunload", (event) => {
+      this.isWindowClosing = true
       this.handleWindowClose()
     })
 
-    // Detectar cuando la página se oculta (cambio de pestaña, minimizar, etc.)
+    // Detectar cuando la página se oculta/muestra
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") {
         this.handlePageHidden()
@@ -62,31 +66,37 @@ class SessionManager {
       }
     })
 
-    // Detectar cuando la ventana pierde el foco por mucho tiempo
-    window.addEventListener("blur", () => {
-      this.windowBlurTimeout = setTimeout(() => {
-        console.log("Ventana sin foco por 30 segundos, verificando sesión...")
-        this.checkSession()
-      }, 30000) // 30 segundos sin foco
-    })
-
-    window.addEventListener("focus", () => {
-      if (this.windowBlurTimeout) {
-        clearTimeout(this.windowBlurTimeout)
-        this.windowBlurTimeout = null
-      }
-      this.checkSession()
-    })
+    // Detectar actividad del usuario para resetear timers
+    this.setupActivityTracking()
 
     // Verificar sesión periódicamente
     this.startSessionCheck()
   }
 
   /**
-   * Maneja el cierre de ventana
+   * Configura el seguimiento de actividad del usuario
+   */
+  setupActivityTracking() {
+    const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart", "click"]
+
+    const updateActivity = () => {
+      this.lastActivity = Date.now()
+    }
+
+    events.forEach((event) => {
+      document.addEventListener(event, updateActivity, true)
+    })
+  }
+
+  /**
+   * Maneja el cierre de ventana - SOLO cuando realmente se cierra
    */
   handleWindowClose() {
-    console.log("Detectado cierre de ventana, cerrando sesión...")
+    if (!this.isWindowClosing) {
+      return // No hacer nada si no es un cierre real
+    }
+
+    console.log("Detectado cierre REAL de ventana, cerrando sesión...")
 
     // Usar sendBeacon para asegurar que la petición se envíe
     const url = `${this.contextPath}/auth`
@@ -114,20 +124,37 @@ class SessionManager {
    * Maneja cuando la página se oculta
    */
   handlePageHidden() {
-    console.log("Página oculta, iniciando timer de 5 minutos...")
+    // No hacer logout si es por cambio de ventana/aplicación
+    if (this.isWindowClosing) {
+      return // Ya se está manejando el cierre
+    }
+
+    this.hiddenStartTime = Date.now()
+    console.log("Página oculta (cambio de pestaña/ventana), iniciando monitoreo...")
 
     // Limpiar timeout anterior si existe
     if (this.pageHiddenTimeout) {
       clearTimeout(this.pageHiddenTimeout)
     }
 
-    // Solo cerrar sesión si la página se oculta por más de 5 minutos
+    // Solo cerrar sesión si:
+    // 1. La página está oculta por MÁS de 15 minutos (no 5)
+    // 2. Y no hay actividad reciente del usuario
     this.pageHiddenTimeout = setTimeout(() => {
       if (document.visibilityState === "hidden") {
-        console.log("Página oculta por 5 minutos, cerrando sesión...")
-        this.handleWindowClose()
+        const timeSinceActivity = Date.now() - this.lastActivity
+        const timeHidden = Date.now() - this.hiddenStartTime
+
+        // Solo cerrar si lleva más de 15 minutos oculta Y sin actividad por más de 10 minutos
+        if (timeHidden > 900000 && timeSinceActivity > 600000) {
+          // 15 min oculta, 10 min sin actividad
+          console.log("Página oculta por 15 minutos sin actividad, cerrando sesión...")
+          this.performLogout()
+        } else {
+          console.log("Página oculta pero con actividad reciente, no cerrando sesión")
+        }
       }
-    }, 300000) // 5 minutos
+    }, 900000) // 15 minutos
   }
 
   /**
@@ -142,8 +169,38 @@ class SessionManager {
       this.pageHiddenTimeout = null
     }
 
+    // Resetear el flag de cierre
+    this.isWindowClosing = false
+    this.hiddenStartTime = null
+
+    // Actualizar actividad
+    this.lastActivity = Date.now()
+
     // Verificar sesión al volver a ser visible
     this.checkSession()
+  }
+
+  /**
+   * Realiza el logout de forma asíncrona
+   */
+  async performLogout() {
+    try {
+      const response = await fetch(`${this.contextPath}/auth`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "action=logout",
+        credentials: "same-origin",
+      })
+
+      if (response.ok) {
+        console.log("Logout automático exitoso")
+        window.location.href = `${this.contextPath}/login`
+      }
+    } catch (error) {
+      console.error("Error en logout automático:", error)
+    }
   }
 
   /**
@@ -161,7 +218,6 @@ class SessionManager {
         const data = await response.json()
         if (!data.hasSession) {
           console.log("Sesión expirada, redirigiendo al login...")
-          // Sesión expirada, redirigir al login
           window.location.href = `${this.contextPath}/login`
         } else {
           console.log("Sesión activa para usuario:", data.username)
@@ -178,11 +234,11 @@ class SessionManager {
    * Inicia la verificación periódica de sesión
    */
   startSessionCheck() {
-    // Verificar cada 5 minutos
+    // Verificar cada 10 minutos (menos frecuente)
     this.sessionCheckInterval = setInterval(() => {
       console.log("Verificación periódica de sesión...")
       this.checkSession()
-    }, 300000) // 5 minutos
+    }, 600000) // 10 minutos
   }
 
   /**
@@ -260,6 +316,6 @@ function cerrarSesion() {
     window.sessionManager.logout()
   } else {
     console.log("SessionManager no disponible, usando logout directo")
-    window.location.href = `${window.location.pathname.split("/")[1] ? "/" + window.location.pathname.split("/")[1] : ""}/logout`
+    window.location.href = `${window.contextPath || ""}/logout`
   }
 }
