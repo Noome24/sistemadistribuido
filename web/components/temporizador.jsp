@@ -7,12 +7,12 @@
 
 <script>
     // Inactivity Timer
-    let inactivityTime = 60;
+    let inactivityTime = 30;
     let timer;
 
     function resetTimer() {
         clearTimeout(timer);
-        inactivityTime = 60;
+        inactivityTime = 30;
         updateTimerDisplay();
         startTimer();
     }
