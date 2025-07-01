@@ -6,13 +6,14 @@
 </div>
 
 <script>
-    // Inactivity Timer
-    let inactivityTime = 30;
+    // Tiempo de inactividad en segundos (definir solo una variable para todo)
+    const INACTIVITY_TIME = 30;
+    let inactivityTime = INACTIVITY_TIME;
     let timer;
 
     function resetTimer() {
         clearTimeout(timer);
-        inactivityTime = 30;
+        inactivityTime = INACTIVITY_TIME;
         updateTimerDisplay();
         startTimer();
     }
