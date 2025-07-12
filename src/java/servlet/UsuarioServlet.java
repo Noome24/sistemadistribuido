@@ -102,7 +102,7 @@ public class UsuarioServlet extends HttpServlet {
         }
 
         Usuario usuarioSesion = (Usuario) session.getAttribute("usuario");
-        if (usuarioSesion.getRol() != 1 && usuarioSesion.getRol() != 2) {
+        if (usuarioSesion.getRol() != 0) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Permisos insuficientes");
@@ -191,7 +191,7 @@ public class UsuarioServlet extends HttpServlet {
         }
 
         Usuario usuarioSesion = (Usuario) session.getAttribute("usuario");
-        if (usuarioSesion.getRol() != 1 && usuarioSesion.getRol() != 2) {
+        if (usuarioSesion.getRol() !=0) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Permisos insuficientes");
@@ -247,7 +247,7 @@ public class UsuarioServlet extends HttpServlet {
         }
 
         Usuario usuarioSesion = (Usuario) session.getAttribute("usuario");
-        if (usuarioSesion.getRol() != 1 && usuarioSesion.getRol() != 2) {
+        if (usuarioSesion.getRol() !=0) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Permisos insuficientes");

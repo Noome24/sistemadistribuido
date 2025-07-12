@@ -31,7 +31,7 @@
                 <span class="menu-text">Pedidos</span>
             </a>
         </li>
-        <c:if test="${rol == 1}">
+        <c:if test="${rol == 0}">
             <li>
                 <a href="${pageContext.request.contextPath}/usuarios" class="${pageContext.request.requestURI.contains('usuarios') ? 'active' : ''}">
                     <i class="bi bi-person-badge"></i>
