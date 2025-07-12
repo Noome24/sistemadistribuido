@@ -34,7 +34,7 @@
                         Crear nuevos usuarios del sistema con diferentes roles y permisos.
                         <br><small class="text-muted">
                             <i class="fas fa-info-circle me-1"></i>
-                            Administradores y Vendedores
+                            Administradores y Recepcionistas
                         </small>
                     </p>
                     <a href="${pageContext.request.contextPath}/usuarios/agregar" 
@@ -91,7 +91,7 @@
                         </div>
                         <div class="col-md-4">
                             <h6 class="text-info">
-                                <i class="fas fa-user-tie me-1"></i>Vendedor
+                                <i class="fas fa-user-tie me-1"></i>Recepcionista
                             </h6>
                             <p class="small text-muted mb-3">
                                 Acceso limitado, puede gestionar productos, clientes y pedidos, pero no usuarios.

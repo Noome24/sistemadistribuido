@@ -61,19 +61,26 @@
                                                 <td>
                                                     <strong>${usuario.id_usuario}</strong>
                                                 </td>
-                                                <td>
-                                                    <c:choose>
-                                                        <c:when test="${usuario.rol == 1}">
-                                                            <span class="badge bg-primary">Administrador</span>
-                                                        </c:when>
-                                                        <c:when test="${usuario.rol == 2}">
-                                                            <span class="badge bg-info">Vendedor</span>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <span class="badge bg-secondary">Desconocido</span>
-                                                        </c:otherwise>
-                                                    </c:choose>
-                                                </td>
+                                                    <td>
+    <c:choose>
+        <c:when test="${usuario.rol == 0}">
+            <span class="badge bg-primary">Administrador</span>
+        </c:when>
+        <c:when test="${usuario.rol == 1}">
+            <span class="badge bg-secondary">Usuario</span>
+        </c:when>
+        <c:when test="${usuario.rol == 2}">
+            <span class="badge bg-info">Recepcionista</span>
+        </c:when>
+        <c:when test="${usuario.rol == 3}">
+            <span class="badge bg-warning text-dark">Transportista</span>
+        </c:when>
+        <c:otherwise>
+            <span class="badge bg-dark">Desconocido</span>
+        </c:otherwise>
+    </c:choose>
+</td>
+
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${usuario.estado == 1}">

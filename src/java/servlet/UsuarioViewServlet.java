@@ -144,7 +144,7 @@ public class UsuarioViewServlet extends HttpServlet {
             int estado = Integer.parseInt(estadoStr);
 
             if (rol < 1 || rol > 3) {
-                request.setAttribute("error", "El rol debe ser 1 (Administrador), 2 (Vendedor) o 3 (Usuario)");
+                request.setAttribute("error", "El rol debe ser 0 (Administrador), 1 (Usuario), 2 (Recepcionista) o 3 (Transportista)");
                 request.getRequestDispatcher("/usuarios/agregar.jsp").forward(request, response);
                 return;
             }
@@ -202,7 +202,7 @@ public class UsuarioViewServlet extends HttpServlet {
             int estado = Integer.parseInt(estadoStr);
 
             if (rol < 1 || rol > 3) {
-                request.setAttribute("error", "El rol debe ser 1 (Administrador), 2 (Vendedor) o 3 (Usuario)");
+                request.setAttribute("error", "El rol debe ser 0 (Administrador), 1 (Usuario), 2 (Recepcionista) o 3 (Transportista)");
                 request.setAttribute("usuario", usuario);
                 request.getRequestDispatcher("/usuarios/editar.jsp").forward(request, response);
                 return;

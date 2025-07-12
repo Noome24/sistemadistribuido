@@ -8,7 +8,7 @@ CREATE TABLE t_usuario (
     id_usuario VARCHAR(10) NOT NULL PRIMARY KEY,
     estado TINYINT NOT NULL DEFAULT 1 COMMENT '0=inactivo, 1=activo',
     passwd VARCHAR(100) NOT NULL,
-    rol TINYINT NOT NULL DEFAULT 0 COMMENT '0=admin, 1=usuario, 2=vendedor',
+    rol TINYINT NOT NULL DEFAULT 0 COMMENT '0=admin, 1=usuario, 2=recepcionista, 3=transportista'
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

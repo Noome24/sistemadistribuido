@@ -28,7 +28,7 @@
                                     </label>
                                     <input type="text" class="form-control" id="id_usuario" name="id_usuario" 
                                            value="${param.id_usuario}" required maxlength="10"
-                                           placeholder="Ej: admin01, vendedor1">
+                                           placeholder="Ej: admin01">
                                     <div class="form-text">
                                         <i class="fas fa-info-circle me-1"></i>
                                         Mínimo 3 caracteres, solo letras y números
@@ -66,14 +66,17 @@
                                     </label>
                                     <select class="form-select" id="rol" name="rol" required>
                                         <option value="">Seleccionar rol...</option>
-                                        <option value="1" ${param.rol == '1' ? 'selected' : ''}>Administrador</option>
-                                        <option value="2" ${param.rol == '2' ? 'selected' : ''}>Vendedor</option>
-                                        <option value="3" ${param.rol == '3' ? 'selected' : ''}>Usuario</option>
+                                        <option value="0" ${param.rol == '0' ? 'selected' : ''}>Administrador</option>
+                                        <option value="1" ${param.rol == '1' ? 'selected' : ''}>Usuario</option>
+                                        <option value="2" ${param.rol == '2' ? 'selected' : ''}>Recepcionista</option>
+                                        <option value="3" ${param.rol == '3' ? 'selected' : ''}>Transportista</option>
                                     </select>
+
                                     <div class="form-text">
                                         <i class="fas fa-user-tag me-1"></i>
-                                        Administrador: acceso completo, Vendedor: acceso limitado, Usuario: solo consulta
+                                        Administrador: acceso completo, Recepcionista: acceso limitado, Usuario: solo consulta, Transportista: gestión de envíos
                                     </div>
+
                                     <div class="invalid-feedback" id="error-rol"></div>
                                 </div>
                             </div>
@@ -197,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
             mostrarError('rol', 'Debe seleccionar un rol');
             valido = false;
         } else if (rol < 1 || rol > 3) {
-            mostrarError('rol', 'El rol debe ser 1 (Administrador), 2 (Vendedor) o 3 (Usuario)');
+           mostrarError('rol', 'El rol debe ser 0 (Administrador), 1 (Usuario), 2 (Recepcionista) o 3 (Transportista)');
             valido = false;
         }
 
