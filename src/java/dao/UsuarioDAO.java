@@ -11,7 +11,6 @@ import java.util.List;
 public class UsuarioDAO {
     private static final String SELECT_ALL_USUARIOS = "SELECT * FROM t_usuario ORDER BY id_usuario";
     private static final String SELECT_USUARIO_BY_ID = "SELECT * FROM t_usuario WHERE id_usuario = ?";
-    private static final String SELECT_USUARIO_BY_CREDENTIALS = "SELECT * FROM t_usuario WHERE id_usuario = ? AND passwd = ? AND estado = 1";
     private static final String INSERT_USUARIO = "INSERT INTO t_usuario (id_usuario, estado, passwd, rol) VALUES (?, ?, ?, ?)";
     private static final String UPDATE_USUARIO = "UPDATE t_usuario SET estado = ?, passwd = ?, rol = ? WHERE id_usuario = ?";
     private static final String DELETE_USUARIO = "DELETE FROM t_usuario WHERE id_usuario = ?";
@@ -56,28 +55,6 @@ public class UsuarioDAO {
             }
         } catch (SQLException e) {
             System.err.println("Error al obtener usuario por ID: " + e.getMessage());
-        }
-        return usuario;
-    }
-
-    public Usuario validarCredenciales(String idUsuario, String password) {
-        Usuario usuario = null;
-        try (Connection conn = ConexionDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SELECT_USUARIO_BY_CREDENTIALS)) {
-            
-            ps.setString(1, idUsuario);
-            ps.setString(2, password);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    usuario = new Usuario();
-                    usuario.setId_usuario(rs.getString("id_usuario"));
-                    usuario.setEstado(rs.getInt("estado"));
-                    usuario.setPasswd(rs.getString("passwd"));
-                    usuario.setRol(rs.getInt("rol"));
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al validar credenciales: " + e.getMessage());
         }
         return usuario;
     }
