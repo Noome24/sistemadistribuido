@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (document.getElementById('rol').value === '') {
             mostrarError('rol', 'Debe seleccionar un rol');
             valido = false;
-        } else if (rol < 1 || rol > 3) {
+        } else if (rol < 0 || rol > 3) {
            mostrarError('rol', 'El rol debe ser 0 (Administrador), 1 (Usuario), 2 (Recepcionista) o 3 (Transportista)');
             valido = false;
         }
