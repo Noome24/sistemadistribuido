@@ -60,8 +60,8 @@
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
                                         <select class="form-control" id="rol" name="rol" required>
-                                            <option value="0">Administrador</option>
-                                            <option value="1" selected>Usuario</option>
+                                            <option value="0" selected>Administrador</option>
+                                            <option value="1">Usuario</option>
                                             <option value="2">Recepcionista</option>
                                             <option value="3">Transportista</option>
                                         </select>
