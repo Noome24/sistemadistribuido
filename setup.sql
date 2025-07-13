@@ -1,5 +1,5 @@
-CREATE DATABASE sistema_distribuido;
-USE sistema_distribuido;
+CREATE DATABASE database_use;
+USE database_use;
 
 -- =====================================================
 -- TABLA: t_usuario
