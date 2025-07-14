@@ -41,28 +41,6 @@
             </li>
         </c:if>
         
-        <!-- Usuario normal: Todo menos usuarios -->
-        <c:if test="${rol == 1}">
-            <li>
-                <a href="${pageContext.request.contextPath}/clientes" class="${pageContext.request.requestURI.contains('clientes') ? 'active' : ''}">
-                    <i class="bi bi-people"></i>
-                    <span class="menu-text">Clientes</span>
-                </a>
-            </li>
-            <li>
-                <a href="${pageContext.request.contextPath}/productos" class="${pageContext.request.requestURI.contains('productos') ? 'active' : ''}">
-                    <i class="bi bi-box-seam"></i>
-                    <span class="menu-text">Productos</span>
-                </a>
-            </li>
-            <li>
-                <a href="${pageContext.request.contextPath}/pedidos" class="${pageContext.request.requestURI.contains('pedidos') ? 'active' : ''}">
-                    <i class="bi bi-cart3"></i>
-                    <span class="menu-text">Pedidos</span>
-                </a>
-            </li>
-        </c:if>
-        
         <!-- Recepcionista: Clientes, productos y pedidos (para modificar estados) -->
         <c:if test="${rol == 2}">
             <li>

@@ -47,14 +47,13 @@
                                         <select class="form-select" id="rol" name="rol" required>
                                             <option value="">Seleccionar rol...</option>
                                             <option value="0" ${usuario.rol == 0 ? 'selected' : ''}>Administrador</option>
-                                            <option value="1" ${usuario.rol == 1 ? 'selected' : ''}>Usuario</option>
                                             <option value="2" ${usuario.rol == 2 ? 'selected' : ''}>Recepcionista</option>
                                             <option value="3" ${usuario.rol == 3 ? 'selected' : ''}>Transportista</option>
                                         </select>
 
                                         <div class="form-text">
                                             <i class="fas fa-user-tag me-1"></i>
-                                            Administrador: acceso completo, Recepcionista: acceso limitado, Usuario: solo consulta, Transportista: gestión de envíos
+                                            Administrador: acceso completo, Recepcionista: acceso limitado, Transportista: gestión de envíos
                                         </div>
 
                                         <div class="invalid-feedback" id="error-rol"></div>

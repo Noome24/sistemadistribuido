@@ -66,9 +66,6 @@
         <c:when test="${usuario.rol == 0}">
             <span class="badge bg-primary">Administrador</span>
         </c:when>
-        <c:when test="${usuario.rol == 1}">
-            <span class="badge bg-secondary">Usuario</span>
-        </c:when>
         <c:when test="${usuario.rol == 2}">
             <span class="badge bg-info">Recepcionista</span>
         </c:when>

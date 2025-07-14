@@ -67,14 +67,13 @@
                                     <select class="form-select" id="rol" name="rol" required>
                                         <option value="">Seleccionar rol...</option>
                                         <option value="0" ${param.rol == '0' ? 'selected' : ''}>Administrador</option>
-                                        <option value="1" ${param.rol == '1' ? 'selected' : ''}>Usuario</option>
                                         <option value="2" ${param.rol == '2' ? 'selected' : ''}>Recepcionista</option>
                                         <option value="3" ${param.rol == '3' ? 'selected' : ''}>Transportista</option>
                                     </select>
 
                                     <div class="form-text">
                                         <i class="fas fa-user-tag me-1"></i>
-                                        Administrador: acceso completo, Recepcionista: acceso limitado, Usuario: solo consulta, Transportista: gestión de envíos
+                                        Administrador: acceso completo, Recepcionista: acceso limitado, Transportista: gestión de envíos
                                     </div>
 
                                     <div class="invalid-feedback" id="error-rol"></div>
@@ -200,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
             mostrarError('rol', 'Debe seleccionar un rol');
             valido = false;
         } else if (rol < 0 || rol > 3) {
-           mostrarError('rol', 'El rol debe ser 0 (Administrador), 1 (Usuario), 2 (Recepcionista) o 3 (Transportista)');
+           mostrarError('rol', 'El rol debe ser 0 (Administrador), 2 (Recepcionista) o 3 (Transportista)');
             valido = false;
         }
 
