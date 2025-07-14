@@ -76,7 +76,7 @@
                                     <th><i class="fas fa-info-circle me-1"></i>Estado</th>
                                     <th><i class="fas fa-calculator me-1"></i>Subtotal</th>
                                     <th><i class="fas fa-dollar-sign me-1"></i>Total</th>
-                                    <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 2}">
+                                    <c:if test="${sessionScope.rol == 999 || sessionScope.rol == 999}">
                                         <th><i class="fas fa-truck me-1"></i>Transportista</th>
                                     </c:if>
                                     <th><i class="fas fa-cogs me-1"></i>Acciones</th>
@@ -117,7 +117,7 @@
                                                 S/. <fmt:formatNumber value="${pedido.totalventa}" pattern="#,##0.00"/>
                                             </span>
                                         </td>
-                                        <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 2}">
+                                        <c:if test="${sessionScope.rol == 999 || sessionScope.rol == 999}">
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <select class="form-select form-select-sm me-2" 
