@@ -11,6 +11,7 @@ public class Pedido {
     private BigDecimal totalventa;
     private String id_cliente;
     private int estado; // AÑADIDO: 0=sin asignar, 1=rechazado, 2=aceptado, 3=asignado, 4=en proceso, 5=entregado
+    private String transportistaAsignado; // AÑADIDO: ID del transportista asignado
     
     // Relaciones
     private Cliente cliente;
@@ -78,6 +79,14 @@ public class Pedido {
     
     public void setEstado(int estado) {
         this.estado = estado;
+    }
+
+    public String getTransportistaAsignado() {
+        return transportistaAsignado;
+    }
+
+    public void setTransportistaAsignado(String transportistaAsignado) {
+        this.transportistaAsignado = transportistaAsignado;
     }
     
     public Cliente getCliente() {

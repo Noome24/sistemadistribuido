@@ -10,12 +10,25 @@
                 <div>
                     <h2 class="mb-1">
                         <i class="fas fa-list text-primary me-2"></i>
-                        Lista de Pedidos
+                        <c:choose>
+                            <c:when test="${sessionScope.rol == 2}">Pedidos Sin Asignar</c:when>
+                            <c:when test="${sessionScope.rol == 3}">Mis Pedidos Asignados</c:when>
+                            <c:when test="${sessionScope.rol == 99}">Mis Pedidos</c:when>
+                            <c:otherwise>Lista de Pedidos</c:otherwise>
+                        </c:choose>
                     </h2>
-                    <p class="text-muted mb-0">Gestiona y visualiza todos los pedidos registrados</p>
+                    <p class="text-muted mb-0">
+                        <c:choose>
+                            <c:when test="${sessionScope.rol == 2}">Gestiona pedidos pendientes de asignación</c:when>
+                            <c:when test="${sessionScope.rol == 3}">Visualiza y actualiza tus pedidos asignados</c:when>
+                            <c:when test="${sessionScope.rol == 99}">Visualiza el estado de tus pedidos</c:when>
+                            <c:otherwise>Gestiona y visualiza todos los pedidos registrados</c:otherwise>
+                        </c:choose>
+                    </p>
                 </div>
                 <div>
-                    <c:if test="${sessionScope.rol != 3 && sessionScope.rol != 99}">
+                    <!-- Solo admins y usuarios normales pueden crear pedidos -->
+                    <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 1}">
                         <a href="${pageContext.request.contextPath}/pedidos/agregar" class="btn btn-success">
                             <i class="fas fa-plus me-2"></i>
                             Nuevo Pedido
@@ -30,7 +43,45 @@
         </div>
     </div>
 
-    
+    <!-- Filtros para Recepcionistas -->
+    <c:if test="${sessionScope.rol == 2}">
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Panel de Recepcionista
+                        </h6>
+                        <p class="card-text small">
+                            Como recepcionista, puedes ver solo los pedidos sin asignar y decidir si aceptarlos o rechazarlos.
+                            Una vez aceptados, los administradores podrán asignar transportistas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </c:if>
+
+    <!-- Información para Transportistas -->
+    <c:if test="${sessionScope.rol == 3}">
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h6 class="card-title text-warning">
+                            <i class="fas fa-truck me-2"></i>
+                            Panel de Transportista
+                        </h6>
+                        <p class="card-text small">
+                            Aquí puedes ver todos los pedidos que te han sido asignados. 
+                            Puedes cambiar el estado de "Asignado" a "En Proceso" y finalmente a "Entregado".
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </c:if>
 
     <!-- Mensajes -->
     <c:if test="${not empty sessionScope.error}">
@@ -57,6 +108,7 @@
             <h5 class="card-title mb-0">
                 <i class="fas fa-table me-2"></i>
                 <c:choose>
+                    <c:when test="${sessionScope.rol == 2}">Pedidos Pendientes de Asignación</c:when>
                     <c:when test="${sessionScope.rol == 3}">Mis Pedidos Asignados</c:when>
                     <c:when test="${sessionScope.rol == 99}">Mis Pedidos</c:when>
                     <c:otherwise>Pedidos Registrados</c:otherwise>
@@ -76,7 +128,8 @@
                                     <th><i class="fas fa-info-circle me-1"></i>Estado</th>
                                     <th><i class="fas fa-calculator me-1"></i>Subtotal</th>
                                     <th><i class="fas fa-dollar-sign me-1"></i>Total</th>
-                                    <c:if test="${sessionScope.rol == 999 || sessionScope.rol == 999}">
+                                    <!-- Solo admins ven la columna de transportista -->
+                                    <c:if test="${sessionScope.rol == 0}">
                                         <th><i class="fas fa-truck me-1"></i>Transportista</th>
                                     </c:if>
                                     <th><i class="fas fa-cogs me-1"></i>Acciones</th>
@@ -117,25 +170,41 @@
                                                 S/. <fmt:formatNumber value="${pedido.totalventa}" pattern="#,##0.00"/>
                                             </span>
                                         </td>
-                                        <c:if test="${sessionScope.rol == 999 || sessionScope.rol == 999}">
+                                        
+                                        <!-- Columna de asignación de transportista - Solo para Admins -->
+                                        <c:if test="${sessionScope.rol == 0}">
                                             <td>
-                                                <div class="d-flex align-items-center">
-                                                    <select class="form-select form-select-sm me-2" 
-                                                            onchange="asignarTransportista('${pedido.id_pedido}', this.value)"
-                                                            ${pedido.estado >= 5 ? 'disabled' : ''}>
-                                                        <option value="">Sin asignar</option>
-                                                        <!-- Las opciones se cargarán dinámicamente -->
-                                                    </select>
-                                                </div>
+                                                <c:choose>
+                                                    <c:when test="${pedido.estado == 2}">
+                                                        <select class="form-select form-select-sm" 
+                                                                onchange="asignarTransportista('${pedido.id_pedido}', this.value)">
+                                                            <option value="">Seleccionar transportista</option>
+                                                            <c:forEach var="transportista" items="${transportistas}">
+                                                                <option value="${transportista.id_usuario}">
+                                                                    ${transportista.id_usuario}
+                                                                </option>
+                                                            </c:forEach>
+                                                        </select>
+                                                    </c:when>
+                                                    <c:when test="${pedido.estado >= 3}">
+                                                        <span class="badge bg-info">Asignado</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="text-muted">Pendiente</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </td>
                                         </c:if>
+                                        
                                         <td>
                                             <div class="btn-group" role="group">
+                                                <!-- Todos pueden ver detalles -->
                                                 <a href="${pageContext.request.contextPath}/pedidos/detalles/${pedido.id_pedido}" 
                                                    class="btn btn-info btn-sm" title="Ver Detalles">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 
+                                                <!-- Solo Admins y Usuarios normales pueden editar/eliminar -->
                                                 <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 1}">
                                                     <a href="${pageContext.request.contextPath}/pedidos/editar/${pedido.id_pedido}" 
                                                        class="btn btn-warning btn-sm" title="Editar">
@@ -147,36 +216,43 @@
                                                     </button>
                                                 </c:if>
                                                 
+                                                <!-- Acciones específicas para Recepcionistas -->
                                                 <c:if test="${sessionScope.rol == 2}">
-                                                    <div class="btn-group" role="group">
-                                                        <button type="button" class="btn btn-success btn-sm" 
-                                                                onclick="cambiarEstado('${pedido.id_pedido}', 2)" 
-                                                                title="Aceptar" ${pedido.estado >= 2 ? 'disabled' : ''}>
-                                                            <i class="fas fa-check"></i>
-                                                        </button>
-                                                        <button type="button" class="btn btn-danger btn-sm" 
-                                                                onclick="cambiarEstado('${pedido.id_pedido}', 1)" 
-                                                                title="Rechazar" ${pedido.estado != 0 ? 'disabled' : ''}>
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    </div>
+                                                    <button type="button" class="btn btn-success btn-sm" 
+                                                            onclick="cambiarEstado('${pedido.id_pedido}', 2)" 
+                                                            title="Aceptar Pedido">
+                                                        <i class="fas fa-check"></i> Aceptar
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-sm" 
+                                                            onclick="cambiarEstado('${pedido.id_pedido}', 1)" 
+                                                            title="Rechazar Pedido">
+                                                        <i class="fas fa-times"></i> Rechazar
+                                                    </button>
                                                 </c:if>
                                                 
+                                                <!-- Acciones específicas para Transportistas -->
                                                 <c:if test="${sessionScope.rol == 3}">
-                                                    <c:if test="${pedido.estado == 3}">
-                                                        <button type="button" class="btn btn-warning btn-sm" 
-                                                                onclick="cambiarEstado('${pedido.id_pedido}', 4)" 
-                                                                title="Iniciar Proceso">
-                                                            <i class="fas fa-play"></i>
-                                                        </button>
-                                                    </c:if>
-                                                    <c:if test="${pedido.estado == 4}">
-                                                        <button type="button" class="btn btn-success btn-sm" 
-                                                                onclick="cambiarEstado('${pedido.id_pedido}', 5)" 
-                                                                title="Marcar Entregado">
-                                                            <i class="fas fa-check-circle"></i>
-                                                        </button>
-                                                    </c:if>
+                                                    <c:choose>
+                                                        <c:when test="${pedido.estado == 3}">
+                                                            <button type="button" class="btn btn-warning btn-sm" 
+                                                                    onclick="cambiarEstado('${pedido.id_pedido}', 4)" 
+                                                                    title="Iniciar Proceso de Entrega">
+                                                                <i class="fas fa-play"></i> Iniciar
+                                                            </button>
+                                                        </c:when>
+                                                        <c:when test="${pedido.estado == 4}">
+                                                            <button type="button" class="btn btn-success btn-sm" 
+                                                                    onclick="cambiarEstado('${pedido.id_pedido}', 5)" 
+                                                                    title="Marcar como Entregado">
+                                                                <i class="fas fa-check-circle"></i> Entregar
+                                                            </button>
+                                                        </c:when>
+                                                        <c:when test="${pedido.estado == 5}">
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check-circle"></i> Entregado
+                                                            </span>
+                                                        </c:when>
+                                                    </c:choose>
                                                 </c:if>
                                             </div>
                                         </td>
@@ -189,15 +265,23 @@
                 <c:otherwise>
                     <div class="text-center py-5">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No hay pedidos registrados</h5>
-                        <p class="text-muted">
+                        <h5 class="text-muted">
                             <c:choose>
+                                <c:when test="${sessionScope.rol == 2}">No hay pedidos sin asignar</c:when>
                                 <c:when test="${sessionScope.rol == 3}">No tienes pedidos asignados</c:when>
                                 <c:when test="${sessionScope.rol == 99}">No has realizado pedidos</c:when>
+                                <c:otherwise>No hay pedidos registrados</c:otherwise>
+                            </c:choose>
+                        </h5>
+                        <p class="text-muted">
+                            <c:choose>
+                                <c:when test="${sessionScope.rol == 2}">Todos los pedidos han sido procesados</c:when>
+                                <c:when test="${sessionScope.rol == 3}">Espera a que te asignen pedidos</c:when>
+                                <c:when test="${sessionScope.rol == 99}">Comienza realizando tu primer pedido</c:when>
                                 <c:otherwise>Comienza agregando tu primer pedido</c:otherwise>
                             </c:choose>
                         </p>
-                        <c:if test="${sessionScope.rol != 3 && sessionScope.rol != 99}">
+                        <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 1}">
                             <a href="${pageContext.request.contextPath}/pedidos/agregar" class="btn btn-success">
                                 <i class="fas fa-plus me-2"></i>
                                 Agregar Primer Pedido
@@ -239,12 +323,7 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-let transportistas = [];
-
 $(document).ready(function() {
-    // Cargar transportistas
-    cargarTransportistas();
-    
     // Inicializar DataTable si está disponible
     if (typeof $.fn.DataTable !== 'undefined' && $('#tablaPedidos').length > 0) {
         $('#tablaPedidos').DataTable({
@@ -258,106 +337,58 @@ $(document).ready(function() {
     }
 });
 
-function cargarTransportistas() {
-    fetch('${pageContext.request.contextPath}/api/pedidos/transportistas')
+function asignarTransportista(idPedido, idTransportista) {
+    if (!idTransportista) {
+        alert('Por favor seleccione un transportista');
+        return;
+    }
+    
+    if (confirm('¿Está seguro que desea asignar este transportista al pedido?')) {
+        fetch(`${pageContext.request.contextPath}/api/pedidos/${idPedido}/asignar/${idTransportista}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
         .then(response => response.json())
         .then(data => {
-            transportistas = data;
-            actualizarSelectsTransportistas();
+            if (data.success) {
+                alert('Transportista asignado exitosamente');
+                location.reload();
+            } else {
+                alert('Error al asignar transportista: ' + data.message);
+            }
         })
-        .catch(error => console.error('Error al cargar transportistas:', error));
-}
-
-function actualizarSelectsTransportistas() {
-    document.querySelectorAll('select[onchange*="asignarTransportista"]').forEach(select => {
-        const pedidoId = select.getAttribute('onchange').match(/'([^']+)'/)[1];
-        
-        // Limpiar opciones existentes excepto la primera
-        while (select.children.length > 1) {
-            select.removeChild(select.lastChild);
-        }
-        
-        // Agregar transportistas
-        transportistas.forEach(transportista => {
-            const option = document.createElement('option');
-            option.value = transportista.id_usuario;
-            option.textContent = transportista.id_usuario;
-            select.appendChild(option);
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al asignar transportista');
         });
-        
-        // Obtener transportista actual asignado
-        obtenerTransportistaAsignado(pedidoId, select);
-    });
-}
-
-function obtenerTransportistaAsignado(pedidoId, select) {
-    fetch(`${pageContext.request.contextPath}/api/pedidos/${pedidoId}`)
-        .then(response => response.json())
-        .then(pedido => {
-            // Aquí necesitarías obtener el transportista asignado
-            // Por ahora dejamos el select sin selección específica
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-function asignarTransportista(idPedido, idTransportista) {
-    if (!idTransportista) return;
-    
-    fetch(`${pageContext.request.contextPath}/api/pedidos/${idPedido}/asignar/${idTransportista}`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error al asignar transportista: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al asignar transportista');
-    });
+    }
 }
 
 function cambiarEstado(idPedido, nuevoEstado) {
     const contextPath = "${pageContext.request.contextPath}";
-    console.debug("📂 contextPath:", contextPath);
-    console.debug("🧾 ID recibido:", idPedido);
-    console.debug("🔄 Estado recibido:", nuevoEstado);
-
+    
     if (!idPedido) {
-        alert("⚠️ El ID del pedido está vacío. Revisa tu código JSP.");
+        alert("Error: ID del pedido no válido");
         return;
     }
+
     const estados = {
         1: 'rechazar',
         2: 'aceptar',
-        4: 'iniciar proceso',
+        4: 'iniciar proceso de entrega',
         5: 'marcar como entregado'
     };
 
     const accion = estados[nuevoEstado];
-
-    console.debug("📌 DEBUG: Preparando solicitud...");
-    console.debug("🧾 ID del Pedido:", idPedido);
-    console.debug("🔄 Nuevo Estado:", nuevoEstado);
-    console.debug("📘 Acción:", accion);
-
-    if (!idPedido || !nuevoEstado || !accion) {
-        console.error("❌ ERROR: Datos inválidos para cambiar estado");
-        alert("Error: datos incompletos para cambiar estado.");
+    
+    if (!accion) {
+        alert("Error: Estado no válido");
         return;
     }
 
-    
-
     const url = contextPath + "/api/pedidos/" + idPedido + "/estado/" + nuevoEstado;
-
-    console.debug("🌐 URL construida:", url);
 
     if (confirm(`¿Está seguro que desea ${accion} este pedido?`)) {
         fetch(url, {
@@ -366,46 +397,19 @@ function cambiarEstado(idPedido, nuevoEstado) {
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => {
-            console.debug("📦 DEBUG: Status de respuesta:", response.status);
-            return response.text().then(text => {
-                console.debug("📄 DEBUG: Respuesta raw:", text);
-
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    throw new Error("Respuesta no es JSON válida");
-                }
-            });
-        })
+        .then(response => response.json())
         .then(data => {
-            console.debug("✅ DEBUG: Respuesta parseada:", data);
             if (data.success) {
+                alert(`Pedido ${accion} exitosamente`);
                 location.reload();
             } else {
-                alert("⚠️ Error al cambiar estado: " + data.message);
+                alert("Error al cambiar estado: " + data.message);
             }
         })
         .catch(error => {
-            console.error("🔥 ERROR FATAL durante cambiarEstado():", error);
+            console.error("Error:", error);
             alert("Error al cambiar estado: " + error.message);
         });
-    }
-}
-
-
-function filtrarPorEstado(estado) {
-    // Actualizar botones activos
-    document.querySelectorAll('.btn-group .btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
-    if (estado === 'todos') {
-        location.href = '${pageContext.request.contextPath}/pedidos/listar';
-    } else {
-        // Aquí podrías implementar filtrado AJAX o redirigir con parámetros
-        location.href = `${pageContext.request.contextPath}/pedidos/listar?estado=${estado}`;
     }
 }
 
@@ -451,6 +455,23 @@ function confirmarEliminar(idPedido) {
 }
 
 .form-select-sm {
-    max-width: 150px;
+    max-width: 180px;
+}
+
+/* Role-specific styling */
+.border-info {
+    border-color: #0dcaf0 !important;
+}
+
+.border-warning {
+    border-color: #ffc107 !important;
+}
+
+.text-info {
+    color: #0dcaf0 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
 }
 </style>

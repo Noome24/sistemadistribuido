@@ -497,6 +497,67 @@ public class PedidoDAO {
     }
 
     /**
+     * Obtiene todos los pedidos con información de transportista asignado
+     */
+    public List<Pedido> listarPedidosConTransportista() {
+        List<Pedido> pedidos = new ArrayList<>();
+        
+        String sql = "SELECT p.id_pedido, p.fecha, p.subtotal, p.totalventa, p.id_cliente, p.estado, " +
+                "c.nombres, c.apellidos, c.dni, " +
+                "a.id_transportista " +
+                "FROM t_pedido p " +
+                "LEFT JOIN t_cliente c ON p.id_cliente = c.id_cliente " +
+                "LEFT JOIN t_asignacion_pedido a ON p.id_pedido = a.id_pedido " +
+                "ORDER BY p.fecha DESC";
+    
+        try (Connection conn = ConexionDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+        
+            while (rs.next()) {
+                Pedido pedido = mapearPedido(rs);
+                // Agregar información del transportista si existe
+                String transportistaId = rs.getString("id_transportista");
+                if (transportistaId != null) {
+                    pedido.setTransportistaAsignado(transportistaId);
+                }
+                pedidos.add(pedido);
+            }
+        
+        } catch (SQLException e) {
+            System.err.println("Error al listar pedidos con transportista: " + e.getMessage());
+            e.printStackTrace();
+        }
+    
+        return pedidos;
+    }
+
+    /**
+     * Verifica si un pedido puede ser editado por el rol actual
+     */
+    public boolean puedeEditarPedido(String idPedido, int rolUsuario) {
+        // Solo admins (0) y usuarios normales (1) pueden editar
+        if (rolUsuario == 0 || rolUsuario == 1) {
+            return true;
+        }
+    
+        // Transportistas (3), recepcionistas (2) y clientes (99) no pueden editar
+        return false;
+    }
+
+    /**
+     * Verifica si un pedido puede ser eliminado por el rol actual
+     */
+    public boolean puedeEliminarPedido(String idPedido, int rolUsuario) {
+        // Solo admins (0) y usuarios normales (1) pueden eliminar
+        if (rolUsuario == 0 || rolUsuario == 1) {
+            return true;
+        }
+    
+        return false;
+    }
+
+    /**
      * Mapea un ResultSet a un objeto Pedido incluyendo estado
      */
     private Pedido mapearPedidoConEstado(ResultSet rs) throws SQLException {

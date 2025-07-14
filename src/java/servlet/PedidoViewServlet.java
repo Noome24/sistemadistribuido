@@ -125,11 +125,52 @@ public class PedidoViewServlet extends HttpServlet {
     }
 
     private void listarPedidos(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<Pedido> pedidos = pedidoDAO.listarPedidos();
-        List<Usuario> transportistas = usuarioDAO.obtenerUsuariosPorRol(3);
+        HttpSession session = request.getSession();
+        Integer rol = (Integer) session.getAttribute("rol");
+        String tipoUsuario = (String) session.getAttribute("tipoUsuario");
+        
+        List<Pedido> pedidos = new ArrayList<>();
+        List<Usuario> transportistas = new ArrayList<>();
+        
+        // Filtrar pedidos según el rol del usuario
+        if (rol != null) {
+            switch (rol) {
+                case 0: // Administrador - ve todos los pedidos
+                    pedidos = pedidoDAO.listarPedidos();
+                    transportistas = usuarioDAO.obtenerUsuariosPorRol(3); // Cargar transportistas para asignación
+                    break;
+                    
+                case 1: // Usuario normal - ve todos los pedidos
+                    pedidos = pedidoDAO.listarPedidos();
+                    break;
+                    
+                case 2: // Recepcionista - solo ve pedidos sin asignar (estado 0)
+                    pedidos = pedidoDAO.obtenerPedidosPorEstado(0);
+                    break;
+                    
+                case 3: // Transportista - solo ve sus pedidos asignados
+                    String idTransportista = (String) session.getAttribute("username");
+                    if (idTransportista != null) {
+                        pedidos = pedidoDAO.obtenerPedidosPorTransportista(idTransportista);
+                    }
+                    break;
+                    
+                case 99: // Cliente - solo ve sus propios pedidos
+                    String clienteId = (String) session.getAttribute("clienteId");
+                    if (clienteId != null) {
+                        pedidos = pedidoDAO.obtenerPedidosPorCliente(clienteId);
+                    }
+                    break;
+                    
+                default:
+                    pedidos = new ArrayList<>();
+                    break;
+            }
+        }
         
         request.setAttribute("pedidos", pedidos);
         request.setAttribute("transportistas", transportistas);
+        request.setAttribute("userRole", rol);
         request.getRequestDispatcher("/pedidos/listar.jsp").forward(request, response);
     }
 
