@@ -2,25 +2,6 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
-<script>
-    console.log("=== DEBUG PRODUCTOS LISTAR ===");
-    console.log("Productos data:", ${not empty productos ? 'true' : 'false'});
-    <c:if test="${not empty productos}">
-        console.log("Número de productos:", ${productos.size()});
-        <c:forEach items="${productos}" var="producto" varStatus="status">
-            console.log("Producto ${status.index}:", {
-                id: "${producto.id_prod}",
-                descripcion: "${producto.descripcion}",
-                costo: "${producto.costo}",
-                precio: "${producto.precio}",
-                cantidad: "${producto.cantidad}"
-            });
-        </c:forEach>
-    </c:if>
-    <c:if test="${empty productos}">
-        console.log("No hay productos en el modelo");
-    </c:if>
-</script>
 
 <div class="container-fluid">
     <div class="page-header mb-3">
@@ -114,16 +95,32 @@
                                             </c:choose>
                                         </td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <a href="${pageContext.request.contextPath}/productos/editar/${producto.id_prod}" class="btn btn-sm btn-outline-primary btn-action" title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="${pageContext.request.contextPath}/productos/eliminar/${producto.id_prod}" class="btn btn-sm btn-outline-danger btn-action" 
-                                                   onclick="return confirm('¿Está seguro de eliminar este producto?')" title="Eliminar">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
-                                            </div>
-                                        </td>
+    <div class="action-buttons">
+        <c:choose>
+            <c:when test="${sessionScope.usuario != null}">
+                <!-- Botones habilitados para usuarios -->
+                <a href="${pageContext.request.contextPath}/productos/editar/${producto.id_prod}" 
+                   class="btn btn-sm btn-outline-primary btn-action" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="${pageContext.request.contextPath}/productos/eliminar/${producto.id_prod}" 
+                   class="btn btn-sm btn-outline-danger btn-action" 
+                   onclick="return confirm('¿Está seguro de eliminar este producto?')" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </c:when>
+            <c:otherwise>
+                <!-- Botones deshabilitados para clientes -->
+                <button type="button" class="btn btn-sm btn-outline-primary btn-action" disabled title="Solo usuarios pueden editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger btn-action" disabled title="Solo usuarios pueden eliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</td>
                                     </tr>
                                 </c:forEach>
                             </tbody>

@@ -3,7 +3,7 @@
 
 <%
     // Verificar sesión
-    if (session == null || session.getAttribute("usuario") == null) {
+    if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
         response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
@@ -45,6 +45,8 @@
     <!-- Action Cards -->
     <div class="row g-4">
         <!-- Añadir Producto Card -->
+        
+    <c:if test="${sessionScope.cliente == null}">
         <div class="col-md-6">
             <div class="card h-100 shadow-sm border-0 hover-card">
                 <div class="card-body text-center p-4">
@@ -64,6 +66,7 @@
                 </div>
             </div>
         </div>
+    </c:if>
 
         <!-- Listar Productos Card -->
         <div class="col-md-6">

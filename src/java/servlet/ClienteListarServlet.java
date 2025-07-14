@@ -23,7 +23,7 @@ public class ClienteListarServlet extends HttpServlet {
 
         // Verificar autenticación
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }

@@ -37,7 +37,7 @@ public class PedidoServlet extends HttpServlet {
 
         // Verificar autenticación
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             Map<String, String> error = new HashMap<>();
             error.put("error", "No autorizado");
@@ -116,7 +116,7 @@ public class PedidoServlet extends HttpServlet {
 
         // Verificar autenticación
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             Map<String, String> error = new HashMap<>();
             error.put("error", "No autorizado");
@@ -197,7 +197,7 @@ public class PedidoServlet extends HttpServlet {
 
         // Verificar autenticación
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             Map<String, String> error = new HashMap<>();
             error.put("error", "No autorizado");
@@ -268,7 +268,7 @@ public class PedidoServlet extends HttpServlet {
 
         // Verificar autenticación
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             Map<String, String> error = new HashMap<>();
             error.put("error", "No autorizado");

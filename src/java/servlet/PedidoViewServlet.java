@@ -35,7 +35,7 @@ public class PedidoViewServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Verificar sesión
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -93,7 +93,7 @@ public class PedidoViewServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Verificar sesión
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -124,10 +124,28 @@ public class PedidoViewServlet extends HttpServlet {
     }
 
     private void listarPedidos(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<Pedido> pedidos = pedidoDAO.listarPedidos();
+        HttpSession session = request.getSession(false);
+
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        List<Pedido> pedidos;
+
+        if (session.getAttribute("cliente") != null) {
+            // Si es cliente, mostrar solo sus pedidos
+            String clienteId = (String) session.getAttribute("clienteId");
+            pedidos = pedidoDAO.obtenerPedidosPorCliente(clienteId);
+        } else {
+            // Si es usuario (empleado), mostrar todos los pedidos
+            pedidos = pedidoDAO.listarPedidos();
+        }
+
         request.setAttribute("pedidos", pedidos);
         request.getRequestDispatcher("/pedidos/listar.jsp").forward(request, response);
     }
+
 
     private void mostrarFormularioAgregar(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<Cliente> clientes = clienteDAO.listarClientes();

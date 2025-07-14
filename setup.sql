@@ -8,7 +8,7 @@ CREATE TABLE t_usuario (
     id_usuario VARCHAR(10) NOT NULL PRIMARY KEY,
     estado TINYINT NOT NULL DEFAULT 1 COMMENT '0=inactivo, 1=activo',
     passwd VARCHAR(100) NOT NULL,
-    rol TINYINT NOT NULL DEFAULT 0 COMMENT '0=admin, 1=usuario, 2=recepcionista, 3=transportista'
+    rol TINYINT NOT NULL DEFAULT 0 COMMENT '0=admin, 1=usuario, 2=recepcionista, 3=transportista',
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -25,6 +25,7 @@ CREATE TABLE t_cliente (
     nombres VARCHAR(100) NOT NULL,
     telefono VARCHAR(20),
     email VARCHAR(100),
+    passwd VARCHAR(100) NOT NULL, -- AÑADIDO: para login de cliente
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -51,6 +52,7 @@ CREATE TABLE t_pedido (
     subtotal DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     totalventa DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     id_cliente VARCHAR(10) NOT NULL,
+    estado TINYINT NOT NULL DEFAULT 0 COMMENT '0=sin asignar, 1=rechazado, 2=aceptado, 3=asignado, 4=en proceso, 5=entregado',
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (id_cliente) REFERENCES t_cliente(id_cliente) ON DELETE CASCADE
@@ -68,6 +70,19 @@ CREATE TABLE t_detalle_pedido (
     PRIMARY KEY (id_pedido, id_prod),
     FOREIGN KEY (id_pedido) REFERENCES t_pedido(id_pedido) ON DELETE CASCADE,
     FOREIGN KEY (id_prod) REFERENCES t_producto(id_prod) ON DELETE CASCADE
+);
+
+-- =====================================================
+-- TABLA: t_asignacion_pedido
+-- =====================================================
+-- AÑADIDO: Relación entre pedidos y transportistas asignados
+CREATE TABLE t_asignacion_pedido (
+    id_asignacion INT AUTO_INCREMENT PRIMARY KEY,
+    id_pedido VARCHAR(10) NOT NULL,
+    id_transportista VARCHAR(10) NOT NULL, -- corresponde a t_usuario con rol = 3
+    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_pedido) REFERENCES t_pedido(id_pedido) ON DELETE CASCADE,
+    FOREIGN KEY (id_transportista) REFERENCES t_usuario(id_usuario) ON DELETE CASCADE
 );
 
 -- =====================================================
@@ -282,12 +297,12 @@ INSERT INTO t_usuario (id_usuario, estado, passwd, rol) VALUES
 ('USR002', 1, 'user456', 0);
 
 -- Insertar clientes de prueba
-INSERT INTO t_cliente (id_cliente, apellidos, direccion, dni, movil, nombres, telefono, email) VALUES
-('CLI001', 'García López', 'Av. Principal 123, Lima', '12345678', '987654321', 'Juan Carlos', '014567890', 'juan.garcia@email.com'),
-('CLI002', 'Rodríguez Silva', 'Jr. Los Olivos 456, Lima', '87654321', '912345678', 'María Elena', '015678901', 'maria.rodriguez@email.com'),
-('CLI003', 'Martínez Pérez', 'Calle Las Flores 789, Lima', '11223344', '998877665', 'Carlos Alberto', '016789012', 'carlos.martinez@email.com'),
-('CLI004', 'López Vásquez', 'Av. Los Pinos 321, Lima', '44332211', '955443322', 'Ana Lucía', '017890123', 'ana.lopez@email.com'),
-('CLI005', 'Sánchez Torres', 'Jr. San Martín 654, Lima', '55667788', '966554433', 'Roberto Miguel', '018901234', 'roberto.sanchez@email.com');
+INSERT INTO t_cliente (id_cliente, apellidos, direccion, dni, movil, nombres, telefono, email, passwd) VALUES
+('CLI001', 'García López', 'Av. Principal 123, Lima', '12345678', '987654321', 'Juan Carlos', '014567890', 'juan.garcia@email.com', 'cliente123'),
+('CLI002', 'Rodríguez Silva', 'Jr. Los Olivos 456, Lima', '87654321', '912345678', 'María Elena', '015678901', 'maria.rodriguez@email.com', 'cliente123'),
+('CLI003', 'Martínez Pérez', 'Calle Las Flores 789, Lima', '11223344', '998877665', 'Carlos Alberto', '016789012', 'carlos.martinez@email.com', 'cliente123'),
+('CLI004', 'López Vásquez', 'Av. Los Pinos 321, Lima', '44332211', '955443322', 'Ana Lucía', '017890123', 'ana.lopez@email.com', 'cliente123'),
+('CLI005', 'Sánchez Torres', 'Jr. San Martín 654, Lima', '55667788', '966554433', 'Roberto Miguel', '018901234', 'roberto.sanchez@email.com', 'cliente123');
 
 -- Insertar productos de prueba
 INSERT INTO t_producto (id_prod, cantidad, costo, descripcion, precio) VALUES
@@ -303,12 +318,12 @@ INSERT INTO t_producto (id_prod, cantidad, costo, descripcion, precio) VALUES
 ('PROD010', 12, 35.00, 'Disco Duro Externo 1TB Seagate', 65.00);
 
 -- Insertar pedidos de prueba
-INSERT INTO t_pedido (id_pedido, fecha, subtotal, totalventa, id_cliente) VALUES
-('PED001', '2024-01-15', 0, 0, 'CLI001'),
-('PED002', '2024-01-16', 0, 0, 'CLI002'),
-('PED003', '2024-01-17', 0, 0, 'CLI003'),
-('PED004', '2024-01-18', 0, 0, 'CLI001'),
-('PED005', '2024-01-19', 0, 0, 'CLI004');
+INSERT INTO t_pedido (id_pedido, fecha, subtotal, totalventa, id_cliente, estado) VALUES
+('PED001', '2024-01-15', 0, 0, 'CLI001', 0),
+('PED002', '2024-01-16', 0, 0, 'CLI002', 0),
+('PED003', '2024-01-17', 0, 0, 'CLI003', 0),
+('PED004', '2024-01-18', 0, 0, 'CLI001', 0),
+('PED005', '2024-01-19', 0, 0, 'CLI004', 0);
 
 -- Insertar detalles de pedidos de prueba
 INSERT INTO t_detalle_pedido (id_pedido, id_prod, cantidad, precio) VALUES

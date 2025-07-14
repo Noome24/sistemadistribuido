@@ -19,10 +19,11 @@ public class ClienteServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Verificar autenticación
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+
 
         String path = request.getPathInfo();
 
@@ -63,7 +64,7 @@ public class ClienteServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Verificar autenticación
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }

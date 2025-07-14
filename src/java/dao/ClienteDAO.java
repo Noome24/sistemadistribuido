@@ -10,7 +10,10 @@ public class ClienteDAO {
     private static final String SELECT_ALL_CLIENTES = "SELECT * FROM t_cliente ORDER BY nombres";
     private static final String SELECT_CLIENTE_BY_ID = "SELECT * FROM t_cliente WHERE id_cliente = ?";
     private static final String SELECT_CLIENTE_BY_DNI = "SELECT * FROM t_cliente WHERE dni = ?";
-    private static final String INSERT_CLIENTE = "INSERT INTO t_cliente (id_cliente, apellidos, direccion, dni, movil, nombres, telefono) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_CLIENTE = 
+    "INSERT INTO t_cliente (id_cliente, apellidos, direccion, dni, movil, nombres, telefono, email, passwd) " +
+    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
     private static final String UPDATE_CLIENTE = "UPDATE t_cliente SET apellidos = ?, direccion = ?, dni = ?, movil = ?, nombres = ?, telefono = ? WHERE id_cliente = ?";
     private static final String DELETE_CLIENTE = "DELETE FROM t_cliente WHERE id_cliente = ?";
     private static final String COUNT_CLIENTES = "SELECT COUNT(*) FROM t_cliente";
@@ -66,8 +69,8 @@ public class ClienteDAO {
     public Cliente obtenerClientePorDni(String dni) {
         Cliente cliente = null;
         try (Connection conn = ConexionDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SELECT_CLIENTE_BY_DNI)) {
-            
+            PreparedStatement ps = conn.prepareStatement(SELECT_CLIENTE_BY_DNI)) {
+
             ps.setString(1, dni);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -79,6 +82,11 @@ public class ClienteDAO {
                     cliente.setMovil(rs.getString("movil"));
                     cliente.setNombres(rs.getString("nombres"));
                     cliente.setTelefono(rs.getString("telefono"));
+                    cliente.setEmail(rs.getString("email"));         
+                    cliente.setPasswd(rs.getString("passwd"));       
+
+                    // 👉 Print para verificar
+                    System.out.println("[DEBUG] Password recuperado para DNI " + dni + ": " + cliente.getPasswd());
                 }
             }
         } catch (SQLException e) {
@@ -86,6 +94,8 @@ public class ClienteDAO {
         }
         return cliente;
     }
+
+
 
     public Cliente obtenerClientePorRuc(String ruc) {
         Cliente cliente = null;
@@ -116,8 +126,8 @@ public class ClienteDAO {
 
     public boolean guardarCliente(Cliente cliente) {
         try (Connection conn = ConexionDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(INSERT_CLIENTE)) {
-            
+            PreparedStatement ps = conn.prepareStatement(INSERT_CLIENTE)) {
+
             ps.setString(1, cliente.getId_cliente());
             ps.setString(2, cliente.getApellidos());
             ps.setString(3, cliente.getDireccion());
@@ -125,14 +135,18 @@ public class ClienteDAO {
             ps.setString(5, cliente.getMovil());
             ps.setString(6, cliente.getNombres());
             ps.setString(7, cliente.getTelefono());
-            
+            ps.setString(8, cliente.getEmail());
+            ps.setString(9, cliente.getPasswd());
+
             return ps.executeUpdate() > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error al guardar cliente: " + e.getMessage());
             return false;
         }
     }
+
+
 
     public boolean actualizarCliente(Cliente cliente) {
         try (Connection conn = ConexionDB.getConnection();

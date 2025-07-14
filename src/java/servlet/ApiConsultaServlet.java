@@ -29,7 +29,7 @@ public class ApiConsultaServlet extends HttpServlet {
         
         // Verificar sesión
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

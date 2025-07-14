@@ -43,17 +43,22 @@
                     
                     <form action="${pageContext.request.contextPath}/login" method="post">
                         <div class="mb-3">
-                            <label for="username" class="form-label">Usuario</label>
+                            <label for="dni" class="form-label">DNI / Usuario</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                <input type="text" class="form-control" id="username" name="username" required placeholder="Ingrese su usuario">
+                                <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                <input type="text" class="form-control" id="dni" name="dni" required 
+                                       placeholder="Ingrese su DNI o usuario" maxlength="20">
                             </div>
+                            <small class="form-text text-muted">
+                                Ingrese su DNI si es cliente o su usuario si es empleado
+                            </small>
                         </div>
                         <div class="mb-4">
                             <label for="password" class="form-label">Contraseña</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" class="form-control" id="password" name="password" required placeholder="Ingrese su contraseña">
+                                <input type="password" class="form-control" id="password" name="password" required 
+                                       placeholder="Ingrese su contraseña">
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary btn-login">
@@ -62,7 +67,17 @@
                     </form>
                     
                     <div class="text-center mt-4">
-                        <p class="text-muted">¿No tienes una cuenta? <a href="${pageContext.request.contextPath}/register" class="text-primary text-decoration-none fw-medium">Regístrate aquí</a></p>
+                        <p class="text-muted">¿No tienes una cuenta? 
+                            <a href="${pageContext.request.contextPath}/register" 
+                               class="text-primary text-decoration-none fw-medium">Regístrate aquí</a>
+                        </p>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Los clientes usan su DNI, los empleados su usuario asignado
+                        </small>
                     </div>
                 </div>
             </div>

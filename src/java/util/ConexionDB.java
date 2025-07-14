@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConexionDB {
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/database_use?useSSL=false&serverTimezone=UTC";
+    private static final String JDBC_URL = "jdbc:mysql://54.232.151.244:3306/database_use?useSSL=false&serverTimezone=UTC";
     private static final String JDBC_USER = "root";
     private static final String JDBC_PASSWORD = "administracion2411";
 

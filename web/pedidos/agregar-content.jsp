@@ -72,17 +72,39 @@
                                    value="<fmt:formatDate value='<%= new java.util.Date() %>' pattern='yyyy-MM-dd' />" required>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="id_cliente" class="form-label">
-                                <i class="fas fa-user me-1"></i>Cliente *
-                            </label>
-                            <select class="form-select" id="id_cliente" name="id_cliente" required>
-                                <option value="">Seleccionar cliente...</option>
-                                <c:forEach var="cliente" items="${clientes}">
-                                    <option value="${cliente.id_cliente}">${cliente.nombres} ${cliente.apellidos}</option>
-                                </c:forEach>
-                            </select>
-                        </div>
+                        <c:choose>
+    <c:when test="${sessionScope.cliente != null}">
+        <%-- Mostrar campo no editable para cliente autenticado --%>
+        <div class="mb-3">
+            <label for="id_cliente" class="form-label">
+                <i class="fas fa-user me-1"></i>Cliente *
+            </label>
+            <select class="form-select" id="id_cliente" name="id_cliente" disabled>
+                <option value="${sessionScope.cliente.id_cliente}" selected>
+                    ${sessionScope.cliente.nombres} ${sessionScope.cliente.apellidos}
+                </option>
+            </select>
+            <input type="hidden" name="id_cliente" value="${sessionScope.cliente.id_cliente}" />
+        </div>
+    </c:when>
+
+    <c:otherwise>
+        <%-- Mostrar selector editable si no es cliente --%>
+        <div class="mb-3">
+            <label for="id_cliente" class="form-label">
+                <i class="fas fa-user me-1"></i>Cliente *
+            </label>
+            <select class="form-select" id="id_cliente" name="id_cliente" required>
+                <option value="">Seleccionar cliente...</option>
+                <c:forEach var="cliente" items="${clientes}">
+                    <option value="${cliente.id_cliente}">
+                        ${cliente.nombres} ${cliente.apellidos}
+                    </option>
+                </c:forEach>
+            </select>
+        </div>
+    </c:otherwise>
+</c:choose>
                     </div>
                 </div>
             </div>

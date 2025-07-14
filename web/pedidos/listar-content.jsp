@@ -101,21 +101,38 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="btn-group" role="group">
-                                                <a href="${pageContext.request.contextPath}/pedidos/detalles/${pedido.id_pedido}" 
-                                                   class="btn btn-info btn-sm" title="Ver Detalles">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="${pageContext.request.contextPath}/pedidos/editar/${pedido.id_pedido}" 
-                                                   class="btn btn-warning btn-sm" title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-danger btn-sm" 
-                                                        onclick="confirmarEliminar('${pedido.id_pedido}')" title="Eliminar">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
+    <div class="btn-group" role="group">
+        <c:choose>
+            <c:when test="${sessionScope.usuario != null}">
+                <!-- Botones habilitados para usuarios -->
+                <a href="${pageContext.request.contextPath}/pedidos/detalles/${pedido.id_pedido}" 
+                   class="btn btn-info btn-sm" title="Ver Detalles">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a href="${pageContext.request.contextPath}/pedidos/editar/${pedido.id_pedido}" 
+                   class="btn btn-warning btn-sm" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <button type="button" class="btn btn-danger btn-sm" 
+                        onclick="confirmarEliminar('${pedido.id_pedido}')" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </c:when>
+            <c:otherwise>
+                <!-- Botones deshabilitados para clientes -->
+                <button type="button" class="btn btn-info btn-sm" disabled title="Solo usuarios pueden ver">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button type="button" class="btn btn-warning btn-sm" disabled title="Solo usuarios pueden editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" disabled title="Solo usuarios pueden eliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</td>
                                     </tr>
                                 </c:forEach>
                             </tbody>

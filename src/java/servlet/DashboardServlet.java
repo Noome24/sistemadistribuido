@@ -35,7 +35,7 @@ public class DashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         // Verificar autenticación
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuario") == null) {
+        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
             if (request.getServletPath().equals("/api/dashboard")) {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");

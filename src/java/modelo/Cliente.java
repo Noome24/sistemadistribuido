@@ -9,11 +9,14 @@ public class Cliente {
     private String telefono;
     private String movil;
     private String email;
+    private String passwd;  // AÑADIDO: contraseña para login
 
     // Constructores
     public Cliente() {}
 
-    public Cliente(String id_cliente, String nombres, String apellidos, String dni, String direccion, String telefono, String movil, String email) {
+    public Cliente(String id_cliente, String nombres, String apellidos, String dni,
+                   String direccion, String telefono, String movil,
+                   String email, String passwd, int estado) {
         this.id_cliente = id_cliente;
         this.nombres = nombres;
         this.apellidos = apellidos;
@@ -22,6 +25,7 @@ public class Cliente {
         this.telefono = telefono;
         this.movil = movil;
         this.email = email;
+        this.passwd = passwd;
     }
 
     // Getters y Setters
@@ -89,6 +93,16 @@ public class Cliente {
         this.email = email;
     }
 
+    public String getPasswd() {
+        return passwd;
+    }
+
+    public void setPasswd(String passwd) {
+        this.passwd = passwd;
+    }
+
+
+
     // Método para obtener nombre completo
     public String getNombre() {
         return (nombres != null ? nombres : "") + " " + (apellidos != null ? apellidos : "");
@@ -105,6 +119,7 @@ public class Cliente {
                 ", telefono='" + telefono + '\'' +
                 ", movil='" + movil + '\'' +
                 ", email='" + email + '\'' +
+                ", passwd='" + passwd + '\'' +
                 '}';
     }
 }
