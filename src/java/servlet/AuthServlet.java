@@ -82,17 +82,23 @@ public class AuthServlet extends HttpServlet {
             System.out.println("[DEBUG] Password almacenado (usuario): " + usuario.getPasswd());
 
             if (usuario.getPasswd().equals(hashedPassword)) {
-                System.out.println("[DEBUG] Login de usuario exitoso");
-                HttpSession session = request.getSession(true);
-                session.setAttribute("usuario", usuario);
-                session.setAttribute("username", usuario.getId_usuario());
-                session.setAttribute("rol", usuario.getRol());
-                session.setAttribute("tipoUsuario", "usuario");
-                session.setMaxInactiveInterval(30 * 60); // 30 minutos
+            System.out.println("[DEBUG] Login de usuario exitoso");
+            HttpSession session = request.getSession(true);
+            session.setAttribute("usuario", usuario);
+            session.setAttribute("username", usuario.getId_usuario());
+            session.setAttribute("rol", usuario.getRol());
+            session.setAttribute("tipoUsuario", "usuario");
+            session.setMaxInactiveInterval(30 * 60); // 30 minutos
 
+            // Redirección según el rol
+            if (usuario.getRol() == 0) {
                 response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
-                return;
             } else {
+                response.sendRedirect(request.getContextPath() + "/pedidos/listar");
+            }
+            return;
+        }
+        else {
                 System.out.println("[DEBUG] Contraseña de usuario no coincide");
             }
         } else {

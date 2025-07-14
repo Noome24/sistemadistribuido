@@ -45,8 +45,8 @@
     <!-- Action Cards -->
     <div class="row g-4">
         <!-- Añadir Producto Card -->
-        
-    <c:if test="${sessionScope.cliente == null}">
+    
+    <c:if test="${sessionScope.usuario != null && sessionScope.usuario.rol == 0}">
         <div class="col-md-6">
             <div class="card h-100 shadow-sm border-0 hover-card">
                 <div class="card-body text-center p-4">

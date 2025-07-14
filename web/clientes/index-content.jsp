@@ -20,6 +20,7 @@
     <!-- Action Cards -->
     <div class="row g-4">
         <!-- Añadir Cliente Card -->
+         <c:if test="${sessionScope.usuario != null && sessionScope.usuario.rol == 0}">
         <div class="col-md-6">
             <div class="card h-100 shadow-sm border-0 hover-card">
                 <div class="card-body text-center p-4">
@@ -39,7 +40,7 @@
                 </div>
             </div>
         </div>
-
+        </c:if>
         <!-- Listar Clientes Card -->
         <div class="col-md-6">
             <div class="card h-100 shadow-sm border-0 hover-card">

@@ -13,9 +13,11 @@
             <i class="fas fa-users me-3"></i>
             Listado de Clientes
         </h1>
+        <c:if test="${sessionScope.usuario != null && sessionScope.usuario.rol == 0}">
         <a href="${pageContext.request.contextPath}/clientes/agregar.jsp" class="btn btn-primary btn-modern ms-3">
             <i class="fas fa-user-plus me-2"></i>Nuevo Cliente
         </a>
+        </c:if>
     </div>
 
     <c:if test="${not empty success}">
@@ -75,6 +77,7 @@
                                         <td><c:out value="${cliente.movil}" /></td>
                                         <td><c:out value="${cliente.direccion}" /></td>
                                         <td>
+                                            <c:if test="${sessionScope.usuario != null && sessionScope.usuario.rol == 0}">
                                             <div class="action-buttons">
                                                 <a href="${pageContext.request.contextPath}/api/clientes/editar/${cliente.id_cliente}" class="btn btn-sm btn-outline-primary btn-action" title="Editar">
                                                     <i class="fas fa-edit"></i>
@@ -84,6 +87,7 @@
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             </div>
+                                            </c:if>
                                         </td>
                                     </tr>
                                 </c:forEach>
@@ -95,10 +99,12 @@
                     <div class="text-center py-4">
                         <i class="fas fa-users fa-3x text-muted mb-3"></i>
                         <h5 class="text-muted">No hay clientes registrados</h5>
+                        <c:if test="${sessionScope.usuario != null && sessionScope.usuario.rol == 0}">
                         <p class="text-muted">Comience agregando un nuevo cliente</p>
                         <a href="${pageContext.request.contextPath}/clientes/agregar.jsp" class="btn btn-primary">
                             <i class="fas fa-user-plus me-2"></i>Agregar Cliente
                         </a>
+                        </c:if>
                     </div>
                 </c:otherwise>
             </c:choose>

@@ -204,8 +204,7 @@
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 
-                                                <!-- Solo Admins y Usuarios normales pueden editar/eliminar -->
-                                                <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 1}">
+                                                <c:if test="${sessionScope.rol == 0}">
                                                     <a href="${pageContext.request.contextPath}/pedidos/editar/${pedido.id_pedido}" 
                                                        class="btn btn-warning btn-sm" title="Editar">
                                                         <i class="fas fa-edit"></i>

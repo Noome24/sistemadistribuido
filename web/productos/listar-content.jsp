@@ -9,9 +9,11 @@
             <i class="fas fa-box me-3"></i>
             Listado de Productos
         </h1>
+        <c:if test="${sessionScope.usuario != null && sessionScope.usuario.rol == 0}">
         <a href="${pageContext.request.contextPath}/productos/agregar" class="btn btn-primary btn-modern ms-3">
             <i class="fas fa-box-open me-2"></i>Nuevo Producto
         </a>
+        </c:if>
     </div>
     
     <c:if test="${not empty success}">
@@ -97,7 +99,7 @@
                                         <td>
     <div class="action-buttons">
         <c:choose>
-            <c:when test="${sessionScope.usuario != null}">
+            <c:when test="${sessionScope.usuario != null && sessionScope.usuario.rol == 0}">
                 <!-- Botones habilitados para usuarios -->
                 <a href="${pageContext.request.contextPath}/productos/editar/${producto.id_prod}" 
                    class="btn btn-sm btn-outline-primary btn-action" title="Editar">

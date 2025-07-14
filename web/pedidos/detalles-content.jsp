@@ -15,10 +15,12 @@
                     <p class="text-muted mb-0">Información completa del pedido #${pedido.id_pedido}</p>
                 </div>
                 <div>
+                    <c:if test="${sessionScope.usuario != null && sessionScope.usuario.rol == 0}">
                     <a href="${pageContext.request.contextPath}/pedidos/editar/${pedido.id_pedido}" class="btn btn-warning">
                         <i class="fas fa-edit me-2"></i>
                         Editar
                     </a>
+                    </c:if>
                     <a href="${pageContext.request.contextPath}/pedidos/listar" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-2"></i>
                         Volver
@@ -232,14 +234,17 @@
                     <i class="fas fa-print me-2"></i>
                     Imprimir Pedido
                 </button>
+                <c:if test="${sessionScope.usuario != null && sessionScope.usuario.rol == 0}">
                 <a href="${pageContext.request.contextPath}/pedidos/editar/${pedido.id_pedido}" class="btn btn-warning">
                     <i class="fas fa-edit me-2"></i>
                     Editar Pedido
                 </a>
+            
                 <button class="btn btn-outline-danger" onclick="confirmarEliminacion('${pedido.id_pedido}')">
                     <i class="fas fa-trash me-2"></i>
                     Eliminar Pedido
                 </button>
+                </c:if>
             </div>
         </div>
     </div>
