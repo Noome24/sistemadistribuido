@@ -34,7 +34,7 @@
                             Nuevo Pedido
                         </a>
                     </c:if>
-                    <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-secondary">
+                    <a href="${pageContext.request.contextPath}/pedidos" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-2"></i>
                         Volver
                     </a>
