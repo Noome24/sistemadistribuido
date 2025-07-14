@@ -355,23 +355,8 @@ INSERT INTO t_detalle_pedido (id_pedido, id_prod, cantidad, precio) VALUES
 -- =====================================================
 -- CONFIGURACIÓN DE PERMISOS
 -- =====================================================
-
--- Crear usuario para la aplicación
-CREATE USER IF NOT EXISTS 'admin'@'%' IDENTIFIED BY 'admin123';
-GRANT ALL PRIVILEGES ON sistema_ventas.* TO 'admin'@'%';
-
--- Crear usuario de solo lectura para reportes
-CREATE USER IF NOT EXISTS 'readonly'@'%' IDENTIFIED BY 'readonly123';
-GRANT SELECT ON sistema_ventas.* TO 'readonly'@'%';
-
--- Aplicar cambios
 FLUSH PRIVILEGES;
 
--- =====================================================
--- VERIFICACIÓN DE DATOS
--- =====================================================
-
--- Mostrar resumen de datos insertados
 SELECT 'USUARIOS' as tabla, COUNT(*) as registros FROM t_usuario
 UNION ALL
 SELECT 'CLIENTES' as tabla, COUNT(*) as registros FROM t_cliente
@@ -382,18 +367,4 @@ SELECT 'PEDIDOS' as tabla, COUNT(*) as registros FROM t_pedido
 UNION ALL
 SELECT 'DETALLES' as tabla, COUNT(*) as registros FROM t_detalle_pedido;
 
--- Mostrar estadísticas básicas
 CALL sp_estadisticas_dashboard();
-
--- =====================================================
--- SCRIPT COMPLETADO EXITOSAMENTE
--- =====================================================
--- Base de datos 'sistema_ventas' creada con:
--- - 5 tablas principales
--- - Índices optimizados
--- - Triggers automáticos
--- - 3 vistas de reporte
--- - 2 procedimientos almacenados
--- - Datos de prueba
--- - Usuarios configurados
--- =====================================================

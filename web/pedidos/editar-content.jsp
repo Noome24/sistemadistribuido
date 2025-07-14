@@ -92,6 +92,45 @@
                                 </c:forEach>
                             </select>
                         </div>
+
+                        <!-- Estado del Pedido -->
+                        <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 2}">
+                            <div class="mb-3">
+                                <label for="estado" class="form-label">
+                                    <i class="fas fa-info-circle me-1"></i>Estado del Pedido
+                                </label>
+                                <select class="form-select" id="estado" name="estado">
+                                    <option value="0" ${pedido.estado == 0 ? 'selected' : ''}>Sin asignar</option>
+                                    <option value="1" ${pedido.estado == 1 ? 'selected' : ''}>Rechazado</option>
+                                    <option value="2" ${pedido.estado == 2 ? 'selected' : ''}>Aceptado</option>
+                                    <option value="3" ${pedido.estado == 3 ? 'selected' : ''}>Asignado</option>
+                                    <option value="4" ${pedido.estado == 4 ? 'selected' : ''}>En proceso</option>
+                                    <option value="5" ${pedido.estado == 5 ? 'selected' : ''}>Entregado</option>
+                                </select>
+                            </div>
+                        </c:if>
+
+                        <!-- Asignación de Transportista -->
+                        <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 2}">
+                            <div class="mb-3">
+                                <label for="id_transportista" class="form-label">
+                                    <i class="fas fa-truck me-1"></i>Transportista
+                                </label>
+                                <select class="form-select" id="id_transportista" name="id_transportista">
+                                    <option value="">Sin asignar</option>
+                                    <c:forEach var="transportista" items="${transportistas}">
+                                        <option value="${transportista.id_usuario}" 
+                                                ${transportista.id_usuario == transportistaAsignado ? 'selected' : ''}>
+                                            ${transportista.id_usuario}
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Si asigna un transportista, el estado cambiará automáticamente a "Asignado"
+                                </div>
+                            </div>
+                        </c:if>
                     </div>
                 </div>
             </div>
@@ -124,6 +163,12 @@
                         <div class="text-center">
                             <h5 class="text-muted">Total a Pagar</h5>
                             <h2 class="text-primary fw-bold" id="totalDisplay">S/. 0.00</h2>
+                        </div>
+
+                        <!-- Estado Visual -->
+                        <div class="mt-3 text-center">
+                            <h6 class="text-muted">Estado Actual</h6>
+                            <span class="badge bg-${pedido.estadoColor} fs-6" id="estadoBadge">${pedido.estadoTexto}</span>
                         </div>
                     </div>
                 </div>
@@ -197,6 +242,24 @@ const detallesExistentes = [
         }<c:if test="${!status.last}">,</c:if>
     </c:forEach>
 ];
+
+const estadosTexto = {
+    0: 'Sin asignar',
+    1: 'Rechazado',
+    2: 'Aceptado',
+    3: 'Asignado',
+    4: 'En proceso',
+    5: 'Entregado'
+};
+
+const estadosColor = {
+    0: 'secondary',
+    1: 'danger',
+    2: 'success',
+    3: 'info',
+    4: 'warning',
+    5: 'primary'
+};
 
 function agregarProducto(detalle = null) {
     contadorProductos++;
@@ -328,6 +391,25 @@ function actualizarResumen() {
     document.getElementById('totalventa').value = total.toFixed(2);
 }
 
+function actualizarEstadoBadge() {
+    const estadoSelect = document.getElementById('estado');
+    const transportistaSelect = document.getElementById('id_transportista');
+    const estadoBadge = document.getElementById('estadoBadge');
+    
+    if (estadoSelect && estadoBadge) {
+        let estado = parseInt(estadoSelect.value) || 0;
+        
+        // Si se asigna transportista, cambiar estado a "Asignado"
+        if (transportistaSelect && transportistaSelect.value && estado < 3) {
+            estado = 3;
+            estadoSelect.value = 3;
+        }
+        
+        estadoBadge.textContent = estadosTexto[estado];
+        estadoBadge.className = 'badge bg-' + estadosColor[estado] + ' fs-6';
+    }
+}
+
 // Validación del formulario
 document.getElementById('formPedido').addEventListener('submit', function(e) {
     const productosItems = document.querySelectorAll('.producto-item');
@@ -368,6 +450,18 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         agregarProducto();
     }
+    
+    // Listeners para actualizar estado
+    const estadoSelect = document.getElementById('estado');
+    const transportistaSelect = document.getElementById('id_transportista');
+    
+    if (estadoSelect) {
+        estadoSelect.addEventListener('change', actualizarEstadoBadge);
+    }
+    
+    if (transportistaSelect) {
+        transportistaSelect.addEventListener('change', actualizarEstadoBadge);
+    }
 });
 </script>
 
@@ -400,5 +494,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .alert {
     border-radius: 8px;
+}
+
+#estadoBadge {
+    transition: all 0.3s ease;
 }
 </style>

@@ -72,39 +72,50 @@
                                    value="<fmt:formatDate value='<%= new java.util.Date() %>' pattern='yyyy-MM-dd' />" required>
                         </div>
                         
-                        <c:choose>
-    <c:when test="${sessionScope.cliente != null}">
-        <%-- Mostrar campo no editable para cliente autenticado --%>
-        <div class="mb-3">
-            <label for="id_cliente" class="form-label">
-                <i class="fas fa-user me-1"></i>Cliente *
-            </label>
-            <select class="form-select" id="id_cliente" name="id_cliente" disabled>
-                <option value="${sessionScope.cliente.id_cliente}" selected>
-                    ${sessionScope.cliente.nombres} ${sessionScope.cliente.apellidos}
-                </option>
-            </select>
-            <input type="hidden" name="id_cliente" value="${sessionScope.cliente.id_cliente}" />
-        </div>
-    </c:when>
+                        <div class="mb-3">
+                            <label for="id_cliente" class="form-label">
+                                <i class="fas fa-user me-1"></i>Cliente *
+                            </label>
+                            <select class="form-select" id="id_cliente" name="id_cliente" required>
+                                <option value="">Seleccionar cliente...</option>
+                                <c:forEach var="cliente" items="${clientes}">
+                                    <option value="${cliente.id_cliente}">${cliente.nombres} ${cliente.apellidos}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
 
-    <c:otherwise>
-        <%-- Mostrar selector editable si no es cliente --%>
-        <div class="mb-3">
-            <label for="id_cliente" class="form-label">
-                <i class="fas fa-user me-1"></i>Cliente *
-            </label>
-            <select class="form-select" id="id_cliente" name="id_cliente" required>
-                <option value="">Seleccionar cliente...</option>
-                <c:forEach var="cliente" items="${clientes}">
-                    <option value="${cliente.id_cliente}">
-                        ${cliente.nombres} ${cliente.apellidos}
-                    </option>
-                </c:forEach>
-            </select>
-        </div>
-    </c:otherwise>
-</c:choose>
+                        <!-- Estado del Pedido -->
+                        <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 2}">
+                            <div class="mb-3">
+                                <label for="estado" class="form-label">
+                                    <i class="fas fa-info-circle me-1"></i>Estado del Pedido
+                                </label>
+                                <select class="form-select" id="estado" name="estado">
+                                    <option value="0">Sin asignar</option>
+                                    <option value="2">Aceptado</option>
+                                    <option value="3">Asignado</option>
+                                </select>
+                            </div>
+                        </c:if>
+
+                        <!-- Asignación de Transportista -->
+                        <c:if test="${sessionScope.rol == 0 || sessionScope.rol == 2}">
+                            <div class="mb-3">
+                                <label for="id_transportista" class="form-label">
+                                    <i class="fas fa-truck me-1"></i>Transportista
+                                </label>
+                                <select class="form-select" id="id_transportista" name="id_transportista">
+                                    <option value="">Sin asignar</option>
+                                    <c:forEach var="transportista" items="${transportistas}">
+                                        <option value="${transportista.id_usuario}">${transportista.id_usuario}</option>
+                                    </c:forEach>
+                                </select>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Si asigna un transportista, el estado cambiará automáticamente a "Asignado"
+                                </div>
+                            </div>
+                        </c:if>
                     </div>
                 </div>
             </div>
@@ -137,6 +148,12 @@
                         <div class="text-center">
                             <h5 class="text-muted">Total a Pagar</h5>
                             <h2 class="text-primary fw-bold" id="totalDisplay">S/. 0.00</h2>
+                        </div>
+
+                        <!-- Estado Visual -->
+                        <div class="mt-3 text-center">
+                            <h6 class="text-muted">Estado del Pedido</h6>
+                            <span class="badge bg-secondary fs-6" id="estadoBadge">Sin asignar</span>
                         </div>
                     </div>
                 </div>
@@ -201,6 +218,24 @@ const productos = [
         }<c:if test="${!status.last}">,</c:if>
     </c:forEach>
 ];
+
+const estadosTexto = {
+    0: 'Sin asignar',
+    1: 'Rechazado',
+    2: 'Aceptado',
+    3: 'Asignado',
+    4: 'En proceso',
+    5: 'Entregado'
+};
+
+const estadosColor = {
+    0: 'secondary',
+    1: 'danger',
+    2: 'success',
+    3: 'info',
+    4: 'warning',
+    5: 'primary'
+};
 
 function agregarProducto() {
     contadorProductos++;
@@ -313,6 +348,46 @@ function actualizarResumen() {
     document.getElementById('totalDisplay').textContent = 'S/. ' + total.toFixed(2);
 }
 
+function actualizarEstadoBadge() {
+    const estadoSelect = document.getElementById('estado');
+    const transportistaSelect = document.getElementById('id_transportista');
+    const estadoBadge = document.getElementById('estadoBadge');
+    
+    if (estadoSelect && estadoBadge) {
+        let estado = parseInt(estadoSelect.value) || 0;
+        
+        // Si se asigna transportista, cambiar estado a "Asignado"
+        if (transportistaSelect && transportistaSelect.value && estado < 3) {
+            estado = 3;
+            estadoSelect.value = 3;
+        }
+        
+        estadoBadge.textContent = estadosTexto[estado];
+        estadoBadge.className = 'badge bg-' + estadosColor[estado] + ' fs-6';
+    }
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar primer producto automáticamente
+    agregarProducto();
+    
+    // Listeners para actualizar estado
+    const estadoSelect = document.getElementById('estado');
+    const transportistaSelect = document.getElementById('id_transportista');
+    
+    if (estadoSelect) {
+        estadoSelect.addEventListener('change', actualizarEstadoBadge);
+    }
+    
+    if (transportistaSelect) {
+        transportistaSelect.addEventListener('change', actualizarEstadoBadge);
+    }
+    
+    // Actualizar badge inicial
+    actualizarEstadoBadge();
+});
+
 // Validación del formulario
 document.getElementById('formPedido').addEventListener('submit', function(e) {
     const productos = document.querySelectorAll('.producto-item');
@@ -339,11 +414,6 @@ document.getElementById('formPedido').addEventListener('submit', function(e) {
         alert('Todos los productos deben tener una cantidad válida.');
         return false;
     }
-});
-
-// Agregar primer producto automáticamente
-document.addEventListener('DOMContentLoaded', function() {
-    agregarProducto();
 });
 </script>
 
@@ -376,5 +446,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .alert {
     border-radius: 8px;
+}
+
+#estadoBadge {
+    transition: all 0.3s ease;
 }
 </style>

@@ -4,18 +4,18 @@ import dao.PedidoDAO;
 import dao.ClienteDAO;
 import dao.ProductoDAO;
 import dao.DetallePedidoDAO;
+import dao.UsuarioDAO;
 import modelo.Pedido;
 import modelo.Cliente;
 import modelo.Producto;
 import modelo.DetallePedido;
-
+import modelo.Usuario;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ public class PedidoViewServlet extends HttpServlet {
     private final ClienteDAO clienteDAO = new ClienteDAO();
     private final ProductoDAO productoDAO = new ProductoDAO();
     private final DetallePedidoDAO detallePedidoDAO = new DetallePedidoDAO();
+    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -124,36 +125,23 @@ public class PedidoViewServlet extends HttpServlet {
     }
 
     private void listarPedidos(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-
-        if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-
-        List<Pedido> pedidos;
-
-        if (session.getAttribute("cliente") != null) {
-            // Si es cliente, mostrar solo sus pedidos
-            String clienteId = (String) session.getAttribute("clienteId");
-            pedidos = pedidoDAO.obtenerPedidosPorCliente(clienteId);
-        } else {
-            // Si es usuario (empleado), mostrar todos los pedidos
-            pedidos = pedidoDAO.listarPedidos();
-        }
-
+        List<Pedido> pedidos = pedidoDAO.listarPedidos();
+        List<Usuario> transportistas = usuarioDAO.obtenerUsuariosPorRol(3);
+        
         request.setAttribute("pedidos", pedidos);
+        request.setAttribute("transportistas", transportistas);
         request.getRequestDispatcher("/pedidos/listar.jsp").forward(request, response);
     }
-
 
     private void mostrarFormularioAgregar(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<Cliente> clientes = clienteDAO.listarClientes();
         List<Producto> productos = productoDAO.listarProductos();
+        List<Usuario> transportistas = usuarioDAO.obtenerUsuariosPorRol(3);
         String nuevoId = pedidoDAO.generarNuevoId();
         
         request.setAttribute("clientes", clientes);
         request.setAttribute("productos", productos);
+        request.setAttribute("transportistas", transportistas);
         request.setAttribute("nuevoId", nuevoId);
         request.getRequestDispatcher("/pedidos/agregar.jsp").forward(request, response);
     }
@@ -164,11 +152,15 @@ public class PedidoViewServlet extends HttpServlet {
             List<Cliente> clientes = clienteDAO.listarClientes();
             List<Producto> productos = productoDAO.listarProductos();
             List<DetallePedido> detalles = detallePedidoDAO.obtenerDetallesPorPedido(id);
+            List<Usuario> transportistas = usuarioDAO.obtenerUsuariosPorRol(3);
+            String transportistaAsignado = pedidoDAO.obtenerTransportistaAsignado(id);
             
             request.setAttribute("pedido", pedido);
             request.setAttribute("clientes", clientes);
             request.setAttribute("productos", productos);
             request.setAttribute("detalles", detalles);
+            request.setAttribute("transportistas", transportistas);
+            request.setAttribute("transportistaAsignado", transportistaAsignado);
             request.getRequestDispatcher("/pedidos/editar.jsp").forward(request, response);
         } else {
             request.getSession().setAttribute("error", "Pedido no encontrado");
@@ -206,6 +198,8 @@ public class PedidoViewServlet extends HttpServlet {
     }
 
     private void guardarPedido(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        boolean detallesGuardados = false; // Declarar la variable
+        
         try {
             // Obtener parámetros del formulario
             String idPedido = request.getParameter("id_pedido");
@@ -247,13 +241,25 @@ public class PedidoViewServlet extends HttpServlet {
             pedido.setFecha(Date.valueOf(fechaStr));
             pedido.setId_cliente(idCliente.trim());
 
+            // Obtener estado del formulario (por defecto 0 - sin asignar)
+            String estadoStr = request.getParameter("estado");
+            int estado = 0;
+            if (estadoStr != null && !estadoStr.trim().isEmpty()) {
+                try {
+                    estado = Integer.parseInt(estadoStr.trim());
+                } catch (NumberFormatException e) {
+                    estado = 0;
+                }
+            }
+            pedido.setEstado(estado);
+
             // Procesar productos y calcular totales
             List<DetallePedido> detalles = new ArrayList<>();
             BigDecimal subtotal = BigDecimal.ZERO;
             
             for (int i = 0; i < productos.length; i++) {
-                if (productos[i] != null && !productos[i].trim().isEmpty() && 
-                    cantidades[i] != null && !cantidades[i].trim().isEmpty()) {
+                if (productos[i] != null && !productos[i].trim().isEmpty() &&
+                     cantidades[i] != null && !cantidades[i].trim().isEmpty()) {
                     
                     String prodId = productos[i].trim();
                     int cantidad = Integer.parseInt(cantidades[i].trim());
@@ -303,7 +309,6 @@ public class PedidoViewServlet extends HttpServlet {
             // Calcular IGV y total
             BigDecimal igv = subtotal.multiply(new BigDecimal("0.18"));
             BigDecimal total = subtotal.add(igv);
-
             pedido.setSubtotal(subtotal);
             pedido.setTotalventa(total);
 
@@ -312,7 +317,7 @@ public class PedidoViewServlet extends HttpServlet {
             
             if (pedidoGuardado) {
                 // Guardar detalles
-                boolean detallesGuardados = detallePedidoDAO.guardarDetalles(pedido.getId_pedido(), detalles);
+                detallesGuardados = detallePedidoDAO.guardarDetalles(pedido.getId_pedido(), detalles);
                 
                 if (detallesGuardados) {
                     // Actualizar stock de productos
@@ -330,6 +335,12 @@ public class PedidoViewServlet extends HttpServlet {
                 request.getSession().setAttribute("error", "Error al guardar el pedido");
             }
 
+            // Asignar transportista si se seleccionó uno
+            String idTransportista = request.getParameter("id_transportista");
+            if (idTransportista != null && !idTransportista.trim().isEmpty() && detallesGuardados) {
+                pedidoDAO.asignarTransportista(pedido.getId_pedido(), idTransportista.trim());
+            }
+
         } catch (NumberFormatException e) {
             request.getSession().setAttribute("error", "Error en los datos numéricos ingresados");
         } catch (Exception e) {
@@ -341,6 +352,8 @@ public class PedidoViewServlet extends HttpServlet {
     }
 
     private void actualizarPedido(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        boolean detallesActualizados = false; // Declarar la variable
+        
         try {
             String idPedido = request.getParameter("id_pedido");
             String fechaStr = request.getParameter("fecha");
@@ -361,6 +374,18 @@ public class PedidoViewServlet extends HttpServlet {
             pedido.setFecha(Date.valueOf(fechaStr));
             pedido.setId_cliente(idCliente);
 
+            // Actualizar estado
+            String estadoStr = request.getParameter("estado");
+            int estado = 0;
+            if (estadoStr != null && !estadoStr.trim().isEmpty()) {
+                try {
+                    estado = Integer.parseInt(estadoStr.trim());
+                } catch (NumberFormatException e) {
+                    estado = 0;
+                }
+            }
+            pedido.setEstado(estado);
+
             List<DetallePedido> detalles = new ArrayList<>();
             BigDecimal subtotal = BigDecimal.ZERO;
             
@@ -380,14 +405,13 @@ public class PedidoViewServlet extends HttpServlet {
 
             BigDecimal igv = subtotal.multiply(new BigDecimal("0.18"));
             BigDecimal total = subtotal.add(igv);
-
             pedido.setSubtotal(subtotal);
             pedido.setTotalventa(total);
 
             boolean pedidoActualizado = pedidoDAO.actualizarPedido(pedido);
             
             if (pedidoActualizado) {
-                boolean detallesActualizados = detallePedidoDAO.guardarDetalles(idPedido, detalles);
+                detallesActualizados = detallePedidoDAO.guardarDetalles(idPedido, detalles);
                 
                 if (detallesActualizados) {
                     request.getSession().setAttribute("success", "Pedido actualizado exitosamente");
@@ -396,6 +420,12 @@ public class PedidoViewServlet extends HttpServlet {
                 }
             } else {
                 request.getSession().setAttribute("error", "Error al actualizar el pedido");
+            }
+
+            // Actualizar asignación de transportista si se cambió
+            String idTransportista = request.getParameter("id_transportista");
+            if (idTransportista != null && !idTransportista.trim().isEmpty() && detallesActualizados) {
+                pedidoDAO.asignarTransportista(idPedido, idTransportista.trim());
             }
 
         } catch (NumberFormatException e) {

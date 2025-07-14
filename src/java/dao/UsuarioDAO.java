@@ -187,4 +187,31 @@ public class UsuarioDAO {
         }
     }
 
+    public List<Usuario> obtenerUsuariosPorRol(int rol) {
+        List<Usuario> usuarios = new ArrayList<>();
+        String sql = "SELECT * FROM t_usuario WHERE rol = ? ORDER BY id_usuario";
+
+        try (Connection conn = ConexionDB.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, rol);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Usuario u = new Usuario();
+                    u.setId_usuario(rs.getString("id_usuario"));
+                    u.setEstado(rs.getInt("estado"));
+                    u.setPasswd(rs.getString("passwd"));
+                    u.setRol(rs.getInt("rol"));
+                    usuarios.add(u);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener usuarios por rol: " + e.getMessage());
+        }
+
+        return usuarios;
+    }
+
+
 }

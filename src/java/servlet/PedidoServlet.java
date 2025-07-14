@@ -3,8 +3,10 @@ package servlet;
 import dao.PedidoDAO;
 import dao.DetallePedidoDAO;
 import dao.ProductoDAO;
+import dao.UsuarioDAO;
 import modelo.Pedido;
 import modelo.DetallePedido;
+import modelo.Usuario;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -28,6 +30,7 @@ public class PedidoServlet extends HttpServlet {
     private final DetallePedidoDAO detallePedidoDAO = new DetallePedidoDAO();
     private final ProductoDAO productoDAO = new ProductoDAO();
     private final Gson gson = new Gson();
+    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -100,6 +103,30 @@ public class PedidoServlet extends HttpServlet {
                     error.put("error", "Pedido no encontrado");
                     response.getWriter().write(gson.toJson(error));
                 }
+            } else if (pathInfo.equals("/transportistas")) {
+                // Obtener lista de transportistas
+                List<Usuario> transportistas = usuarioDAO.obtenerUsuariosPorRol(3);
+                response.getWriter().write(gson.toJson(transportistas));
+                
+            } else if (pathInfo.startsWith("/estado/")) {
+                // Obtener pedidos por estado
+                String estadoStr = pathInfo.substring("/estado/".length());
+                try {
+                    int estado = Integer.parseInt(estadoStr);
+                    List<Pedido> pedidos = pedidoDAO.obtenerPedidosPorEstado(estado);
+                    response.getWriter().write(gson.toJson(pedidos));
+                } catch (NumberFormatException e) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    Map<String, String> error = new HashMap<>();
+                    error.put("error", "Estado inválido");
+                    response.getWriter().write(gson.toJson(error));
+                }
+                
+            } else if (pathInfo.startsWith("/transportista/")) {
+                // Obtener pedidos por transportista
+                String idTransportista = pathInfo.substring("/transportista/".length());
+                List<Pedido> pedidos = pedidoDAO.obtenerPedidosPorTransportista(idTransportista);
+                response.getWriter().write(gson.toJson(pedidos));
             }
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -150,6 +177,11 @@ public class PedidoServlet extends HttpServlet {
             // Calcular total con IGV (18%)
             BigDecimal igv = subtotal.multiply(new BigDecimal("0.18"));
             pedido.setTotalventa(subtotal.add(igv));
+            
+            // Establecer estado por defecto
+            if (pedido.getEstado() == 0) {
+                pedido.setEstado(0); // Sin asignar por defecto
+            }
             
             // Guardar pedido
             boolean pedidoGuardado = pedidoDAO.guardarPedido(pedido);
@@ -309,4 +341,82 @@ public class PedidoServlet extends HttpServlet {
             response.getWriter().write(gson.toJson(error));
         }
     }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String method = request.getMethod();
+        if ("PATCH".equals(method)) {
+            doPatch(request, response);
+        } else {
+            super.service(request, response);
+        }
+    }
+
+    protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    String pathInfo = request.getPathInfo();
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+
+    HttpSession session = request.getSession(false);
+    if (session == null || (session.getAttribute("usuario") == null && session.getAttribute("cliente") == null)) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "No autorizado");
+        response.getWriter().write(gson.toJson(error));
+        return;
+    }
+
+    try {
+        if (pathInfo != null && pathInfo.contains("/estado/")) {
+            String[] parts = pathInfo.split("/");
+
+            if (parts.length >= 4 && "estado".equals(parts[2])) {
+                String idPedido = parts[1];
+                int nuevoEstado = Integer.parseInt(parts[3]);
+
+                boolean actualizado = pedidoDAO.actualizarEstado(idPedido, nuevoEstado);
+
+                Map<String, Object> result = new HashMap<>();
+                result.put("success", actualizado);
+                result.put("message", actualizado ? "Estado actualizado" : "Error al actualizar estado");
+                response.getWriter().write(gson.toJson(result));
+            } else {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "URL mal formada para actualizar estado");
+                response.getWriter().write(gson.toJson(error));
+            }
+        } else if (pathInfo != null && pathInfo.contains("/asignar/")) {
+            String[] parts = pathInfo.split("/");
+
+            if (parts.length >= 4 && "asignar".equals(parts[2])) {
+                String idPedido = parts[1];
+                String idTransportista = parts[3];
+
+                boolean asignado = pedidoDAO.asignarTransportista(idPedido, idTransportista);
+
+                Map<String, Object> result = new HashMap<>();
+                result.put("success", asignado);
+                result.put("message", asignado ? "Transportista asignado" : "Error al asignar transportista");
+                response.getWriter().write(gson.toJson(result));
+            } else {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "URL mal formada para asignar transportista");
+                response.getWriter().write(gson.toJson(error));
+            }
+        } else {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Ruta PATCH no válida");
+            response.getWriter().write(gson.toJson(error));
+        }
+    } catch (Exception e) {
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Error interno del servidor: " + e.getMessage());
+        response.getWriter().write(gson.toJson(error));
+    }
+}
+
 }
